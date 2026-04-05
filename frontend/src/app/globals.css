@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Color Palette - NeuroAlert Africa */
+  --green-900: #04342C;
+  --green-800: #085041;
+  --green-600: #0F6E56;
+  --green-400: #1D9E75;
+  --green-100: #9FE1CB;
+  --green-50: #E1F5EE;
+  --amber: #EF9F27;
+  --red: #E24B4A;
+  --white: #FFFFFF;
+  --gray-50: #F8F7F3;
+  --gray-100: #F1EFE8;
+  --gray-300: #B4B2A9;
+  --gray-600: #5F5E5A;
+  --gray-900: #1a1a18;
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--gray-50)] text-[var(--gray-900)] antialiased;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight text-[var(--green-900)];
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[var(--green-400)] text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-[var(--green-600)] hover:shadow-lg active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply border border-[var(--gray-300)] text-[var(--gray-900)] px-6 py-3 rounded-xl font-medium transition-all hover:bg-white hover:shadow-md active:scale-95;
+  }
+
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm;
+  }
+
+  .nav-link {
+    @apply text-[var(--gray-600)] hover:text-[var(--green-600)] transition-colors font-medium text-sm;
+  }
+}
+
+/* Custom Typography - DM Serif Display (Simulated via system serif if not loaded) */
+@font-face {
+  font-family: 'DM Serif Display';
+  src: url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
+}
+
+.font-display {
+  font-family: 'DM Serif Display', serif;
+}

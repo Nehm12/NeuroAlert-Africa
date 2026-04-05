@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+africastalking
+supabase
+python-dotenv
+google-generativeai
+pytest
+httpx
+python-multipart
