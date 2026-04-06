@@ -3,57 +3,59 @@
 @tailwind utilities;
 
 :root {
-  /* Color Palette - NeuroAlert Africa */
-  --green-900: #04342C;
-  --green-800: #085041;
-  --green-600: #0F6E56;
-  --green-400: #1D9E75;
-  --green-100: #9FE1CB;
-  --green-50: #E1F5EE;
-  --amber: #EF9F27;
-  --red: #E24B4A;
+  /* Africa's Talking / NeuroAlert Orange Theme */
+  --brand-orange: #f28b21;
+  --brand-orange-light: #f5a652;
+  --brand-orange-dark: #d67514;
+  --brand-blue-dark: #101c26; /* Footer color */
+  --brand-gray: #f5f5f5;
   --white: #FFFFFF;
-  --gray-50: #F8F7F3;
-  --gray-100: #F1EFE8;
-  --gray-300: #B4B2A9;
-  --gray-600: #5F5E5A;
-  --gray-900: #1a1a18;
+  --gray-50: #f9f9f9;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-600: #4b5563;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
 }
 
 @layer base {
   body {
-    @apply bg-[var(--gray-50)] text-[var(--gray-900)] antialiased;
-  }
-  
-  h1, h2, h3, h4 {
-    @apply font-display tracking-tight text-[var(--green-900)];
+    @apply bg-white text-[var(--gray-900)] antialiased;
   }
 }
 
 @layer components {
+  /* Diagonal cut for Hero Section */
+  .hero-diagonal {
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  }
+
   .btn-primary {
-    @apply bg-[var(--green-400)] text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-[var(--green-600)] hover:shadow-lg active:scale-95;
+    @apply bg-[var(--brand-orange-light)] text-white px-6 py-2.5 rounded-full font-medium transition-colors hover:bg-white hover:text-[var(--brand-orange)];
   }
   
   .btn-secondary {
-    @apply border border-[var(--gray-300)] text-[var(--gray-900)] px-6 py-3 rounded-xl font-medium transition-all hover:bg-white hover:shadow-md active:scale-95;
+    @apply bg-white text-[var(--brand-orange)] px-6 py-2.5 rounded-full font-medium shadow-sm transition-shadow hover:shadow-md;
   }
 
-  .glass-card {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm;
+  /* The small pill at top right */
+  .btn-login {
+    @apply bg-[var(--brand-orange-light)] text-white px-6 py-1.5 rounded-full text-sm font-medium hover:bg-opacity-90;
   }
 
   .nav-link {
-    @apply text-[var(--gray-600)] hover:text-[var(--green-600)] transition-colors font-medium text-sm;
+    @apply text-white/90 hover:text-white transition-colors font-medium text-sm;
+  }
+  
+  .footer-link {
+    @apply text-[var(--gray-200)] hover:text-white transition-colors text-xs font-light;
   }
 }
 
-/* Custom Typography - DM Serif Display (Simulated via system serif if not loaded) */
-@font-face {
-  font-family: 'DM Serif Display';
-  src: url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
+/* Custom code snippet syntax highlighting colors */
+.code-bg {
+  background-color: #1a2a3a;
 }
-
-.font-display {
-  font-family: 'DM Serif Display', serif;
-}
+.code-keyword { color: #f28b21; }
+.code-string { color: #a4c982; }
+.code-comment { color: #6b869e; }
