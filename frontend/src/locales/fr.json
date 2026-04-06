@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "institutions": "Institutions",
+    "developers": "Développeurs",
+    "about": "À Propos",
+    "faq": "FAQ",
+    "login": "Connexion"
+  },
+  "hero": {
+    "badge": "Détection précoce d'AVC",
+    "title": "En cas d'AVC,\nchaque minute\ncompte.",
+    "subtitle": "Composez *789# depuis n'importe quel téléphone. Notre système USSD vous guide en 60 secondes et alerte les secours immédiatement — sans internet, sans smartphone.",
+    "cta": "Accès Institutions"
+  },
+  "how_it_works": {
+    "title": "Comment ça marche : USSD *789#",
+    "step1_title": "Composez le *789#",
+    "step1_desc": "Pas d'internet ni de smartphone requis. Accédez au système de triage instantanément via USSD sur tous les types de téléphones.",
+    "step2_title": "Suivez les instructions F.A.S.T",
+    "step2_desc": "Le menu interactif guide l'utilisateur à travers le test F.A.S.T (Visage, Bras, Parole, Temps) dans sa langue locale.",
+    "step3_title": "Alerte de secours immédiate",
+    "step3_desc": "Si le score est critique, une alerte est immédiatement envoyée au dashboard de l'hôpital le plus proche."
+  },
+  "footer": {
+    "lang": "Langue",
+    "rights": "Tous droits réservés."
+  }
+}

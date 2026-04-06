@@ -7,7 +7,8 @@
   --brand-orange: #f28b21;
   --brand-orange-light: #f5a652;
   --brand-orange-dark: #d67514;
-  --brand-blue-dark: #101c26; /* Footer color */
+  --brand-blue-dark: #101c26;
+  /* Footer color */
   --brand-gray: #f5f5f5;
   --white: #FFFFFF;
   --gray-50: #f9f9f9;
@@ -25,6 +26,7 @@
 }
 
 @layer components {
+
   /* Diagonal cut for Hero Section */
   .hero-diagonal {
     clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
@@ -33,7 +35,7 @@
   .btn-primary {
     @apply bg-[var(--brand-orange-light)] text-white px-6 py-2.5 rounded-full font-medium transition-colors hover:bg-white hover:text-[var(--brand-orange)];
   }
-  
+
   .btn-secondary {
     @apply bg-white text-[var(--brand-orange)] px-6 py-2.5 rounded-full font-medium shadow-sm transition-shadow hover:shadow-md;
   }
@@ -46,7 +48,7 @@
   .nav-link {
     @apply text-white/90 hover:text-white transition-colors font-medium text-sm;
   }
-  
+
   .footer-link {
     @apply text-[var(--gray-200)] hover:text-white transition-colors text-xs font-light;
   }
@@ -56,6 +58,15 @@
 .code-bg {
   background-color: #1a2a3a;
 }
-.code-keyword { color: #f28b21; }
-.code-string { color: #a4c982; }
-.code-comment { color: #6b869e; }
+
+.code-keyword {
+  color: #f28b21;
+}
+
+.code-string {
+  color: #a4c982;
+}
+
+.code-comment {
+  color: #6b869e;
+}

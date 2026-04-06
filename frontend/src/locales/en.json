@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "institutions": "Institutions",
+    "developers": "Developers",
+    "about": "About Us",
+    "faq": "FAQ",
+    "login": "Login"
+  },
+  "hero": {
+    "badge": "Early Stroke Detection",
+    "title": "In case of stroke,\nevery minute\ncounts.",
+    "subtitle": "Dial *789# from any phone. Our USSD system guides you in 60 seconds and alerts emergency services immediately — no internet, no smartphone required.",
+    "cta": "Institution Access"
+  },
+  "how_it_works": {
+    "title": "How it Works: USSD Dialing",
+    "step1_title": "Dial *789# on any Phone",
+    "step1_desc": "No internet or smartphone required. Access the triage system instantly using standard USSD across all African Telcos.",
+    "step2_title": "Follow the F.A.S.T AI prompts",
+    "step2_desc": "The interactive menu guides the user through the F.A.S.T (Face, Arms, Speech, Time) check in their preferred language.",
+    "step3_title": "Emergency Alert Dispatch",
+    "step3_desc": "If critical, an immediate alert is pushed to the nearest hospital's dashboard."
+  },
+  "footer": {
+    "lang": "Language",
+    "rights": "All rights reserved."
+  }
+}
