@@ -1,0 +1,129 @@
+{
+  "nav": {
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "institutions": "Institutions",
+    "developers": "Développeurs",
+    "about": "À Propos",
+    "faq": "FAQ",
+    "login": "Connexion"
+  },
+  "hero": {
+    "badge": "Détection précoce d'AVC",
+    "title": "Chaque minute\ncompte pour le\ncerveau.",
+    "subtitle": "Composez *789# depuis n'importe quel téléphone. Notre triage USSD guidé par l'IA vous oriente en 60 secondes vers l'hôpital le plus proche — Sans internet.",
+    "cta": "Accès Institutions"
+  },
+  "home_features": {
+    "title": "Triage & Alerte",
+    "desc": "NeuroAlert est un système d'alerte neuro-vasculaire universel. Nous permettons un diagnostic clinique immédiat via USSD pour accélérer la prise en charge des AVC partout en Afrique.",
+    "card1_title": "Triage USSD",
+    "card1_desc": "Interactive menus accessible on any feature phone via *789#.",
+    "card2_title": "Agent IA FAST",
+    "card2_desc": "Immediate stroke evaluation using Gemini models following FAST protocols.",
+    "card3_title": "Alerte Urgence",
+    "card3_desc": "Critical alerts pushed instantly to the medical dashboard the second risk is detected.",
+    "card4_title": "Multi-langues",
+    "card4_desc": "Automatic support for Hausa, Yoruba, Igbo, French, and English.",
+    "card5_title": "Données Cliniques",
+    "card5_desc": "Real-time patient data synchronization to hospital portals.",
+    "card6_title": "Géo-Localisation",
+    "card6_desc": "Mapping emergency cases via cell tower triangulation for rapid response."
+  },
+  "how_it_works": {
+    "title": "Comment ça marche : USSD *789#",
+    "step1_title": "Composez le *789#",
+    "step1_desc": "Pas d'internet ni de smartphone requis. Accédez au système de triage instantanément via USSD sur tous les types de téléphones.",
+    "step2_title": "Suivez les instructions F.A.S.T",
+    "step2_desc": "Le menu interactif guide l'utilisateur à travers le test F.A.S.T (Visage, Bras, Parole, Temps) dans sa langue locale.",
+    "step3_title": "Alerte de secours immédiate",
+    "step3_desc": "Si le score est critique, une alerte est immédiatement envoyée au dashboard de l'hôpital le plus proche."
+  },
+  "product": {
+    "badge": "Un Produit Unique",
+    "title": "L'agent iA USSD F.A.S.T",
+    "desc": "NeuroAlert n'est pas une simple application mobile. C'est un moteur d'intelligence artificielle intégré directement dans les réseaux télécoms africains (USSD). Sans internet, notre IA diagnostique et prévient les urgences liés aux AVC.",
+    "card1_title": "Triage USSD Universel",
+    "card1_desc": "Aucune connexion 3G/4G requise. Le patient compose le *789# et est facturé zéro FCFA. L'infrastructure est hébergée via Africa's Talking.",
+    "card2_title": "Inférence IA Google",
+    "card2_desc": "Notre modèle basé sur Gemini analyse les réponses textuelles du sondage USSD (Face, Arms, Speech, Time) pour évaluer la probabilité critique.",
+    "card3_title": "Support Multi-Lingue",
+    "card3_desc": "Le système détecte automatiquement la langue régionale (Français, Hausa, Yoruba, Igbo) et pose les questions F.A.S.T culturellement adaptées.",
+    "cta_title": "Le standard clinique au bout des doigts.",
+    "cta_desc": "Découvrez comment les hôpitaux se connectent à l'API NeuroAlert pour recevoir les alertes des patients dans la seconde qui suit un test FAST critique.",
+    "cta_btn": "Voir les dashboards"
+  },
+  "pricing": {
+    "title": "Un modèle Freemium accessible à tous",
+    "desc": "NeuroAlert est un produit unique conçu pour l'impact. Totalement gratuit pour les patients finaux. Les coûts hospitaliers et API sont maintenus au strict minimum grâce à un soutien open-source et philanthropique.",
+    "free_badge": "POPULAIRE & VITAL",
+    "free_title": "Utilisateur Libre",
+    "free_subtitle": "Gratuit pour toujours. C'est notre mission.",
+    "premium_title": "Institutions & API",
+    "premium_subtitle": "Pour hôpitaux, cliniques & ministères",
+    "premium_price": "Sur Devis",
+    "btn_free": "Composer le *789#",
+    "btn_premium": "Contacter les ventes",
+    "ong_title": "ONG et Open Source ?",
+    "ong_desc": "Si vous représentez une structure à but non lucratif œuvrant pour la santé publique, NeuroAlert met gracieusement à disposition son infrastructure Premium."
+  },
+  "institutions": {
+    "badge": "Hôpitaux et Ministères",
+    "title1": "Sauvez des vies,",
+    "title2": "visualisez l'urgence en temps réel.",
+    "desc": "Les tableaux de bord NeuroAlert Premium transforment les signaux USSD envoyés par la population en une salle de commande tactique pour les acteurs de la santé. Optimisez le déploiement de vos ambulances avant même que le patient n'arrive.",
+    "demo_btn": "Demander une démo",
+    "alert_badge": "ALERTE CRITIQUE",
+    "alert_patient": "Patient #8942 - Score FAST 3/3",
+    "alert_zone": "Zone Ikeja. Distance estimée à l'hôpital: 4.2km. Equipe dispatchée.",
+    "partners_title": "Ils nous font confiance",
+    "partners_desc": "Gouvernements, acteurs mondiaux de la santé et opérateurs télécoms s'unissent autour de NeuroAlert pour démocratiser l'alerte d'urgence.",
+    "card1_title": "Réception Push Push",
+    "card1_desc": "Soyez notifié sur vos écrans institutionnels dès qu'un patient à proximité déclenche un test FAST majeur sur USSD.",
+    "card2_title": "Cartographie & Heatmaps",
+    "card2_desc": "Identifiez les clusters d'événements neuro-critiques. Exportez vos analyses pour le Ministère de la Santé.",
+    "card3_title": "Collaboration Médicale",
+    "card3_desc": "Coordonnez les équipes d'intervention d'urgence. Partagez le rapport F.A.S.T instantanément via PDF digitalisé."
+  },
+  "developers": {
+    "badge": "Open Source & API",
+    "title": "Construisez avec NeuroAlert",
+    "desc": "Nous croyons en un web ouvert. Intégrez l'intelligence de triage F.A.S.T directement dans les systèmes de votre hôpital grâce à nos API documentées ou contribuez à notre code open-source.",
+    "sdk_title": "SDK Python & REST API",
+    "sdk_desc": "Récupérez la télémétrie USSD en temps réel. Parfait pour les intégrateurs HIS (Hospital Information Systems) existants (DHIS2, OpenMRS).",
+    "github_title": "GitHub Open Source",
+    "github_desc": "Le moteur d'IA et le Backend API sont open-source sous licence MIT. Aidez-nous à affiner les prompts culturels pour l'IA ou ajoutez de nouvelles langues !",
+    "doc_btn": "Documentation",
+    "github_btn": "Voir sur GitHub"
+  },
+  "about": {
+    "title": "Notre Histoire & Mission",
+    "desc": "Né d'un constat alarmant sur le retard de prise en charge des accidents vasculaires cérébraux (AVC) en Afrique Subsaharienne, NeuroAlert veut démocratiser l'accès au diagnostic instantané par Intelligence Artificielle pour les populations non connectées à internet.",
+    "problem_title": "Le Problème",
+    "problem_p1": "L'Afrique enregistre 316 cas d'AVC pour 100 000 habitants, l'un des taux les plus élevés au monde. Le défi principal n'est pas médical, il est logistique : le diagnostic se fait trop tard car les populations reconnaissent mal les symptômes et n'ont pas accès rapidement à Internet pour chercher des informations.",
+    "problem_p2": "Le standard « Golden Hour » (traiter l'AVC dans les 60 minutes) est souvent un mirage. 80% des décès liés à l'AVC peuvent être évités si une thrombolyse est administrée à temps.",
+    "stats_problem": "Mortalité évitable avec un diagnostic ultra-précoce",
+    "solution_title": "La Solution",
+    "solution_p1": "En couplant la technologie USSD (universelle en Afrique) à un agent conversationnel d'IA (LLM), nous amenons l'expertise d'un neurologue directement sur le clavier alphanumérique d'un téléphone basique à 10$.",
+    "solution_p2": "NeuroAlert ne demande ni téléchargement, ni forfait internet. Juste un numéro d'urgence *789# et un système de traduction IA conscient du contexte local (Français, Hausa, Yoruba).",
+    "stats_solution": "95% de couverture mobile Sans connexion 3G/4G"
+  },
+  "faq": {
+    "title": "Foire Aux Questions",
+    "desc": "Toutes les réponses à vos interrogations sur la plateforme, de la technique médicale à l'infrastructure réseau.",
+    "q1": "Qu'est ce que l'USSD et pourquoi l'utiliser ?",
+    "a1": "Contrairement à une application mobile classique, l'USSD (*789#) fonctionne sur tous les modèles de téléphones (feature phones) sans connexion internet. C'est la technologie la plus accessible en Afrique, utilisée au quotidien pour le transfert d'argent (Mobile Money).",
+    "q2": "Le service est-il réellement gratuit pour les patients ?",
+    "a2": "Oui. En partenariat avec les opérateurs télécoms et via le modèle Freemium financé par les requêtes hospitalières de pointe, le patient en détresse ne paie rien pour diagnostiquer et déclencher l'alerte.",
+    "q3": "Comment l'IA détecte un AVC sans voir le patient ?",
+    "a3": "Le système utilise le protocole international F.A.S.T modélisé. Posant des questions simples à l'entourage (Est-ce que le visage est asymétrique ? Peut-il lever les bras ?), notre LLM évalue la cohérence clinique des réponses.",
+    "q4": "Quelles données sont partagées à l'hôpital ?",
+    "a4": "En cas d'alerte critique, NeuroAlert pousse automatiquement un rapport contenant : le degré de probabilité, la localisation approximative Cell-Tower (si autorisée), et l'estimation de l'heure d'apparition (le 'Time' du F.A.S.T).",
+    "q5": "Comment les hôpitaux peuvent-ils se connecter ?",
+    "a5": "Les hôpitaux utilisent notre portail 'Institutions' pour visualiser la carte thermique. Des alertes Push et des Webhooks peuvent être configurés pour envoyer l'information dans leurs outils de gestion (HIS) existants."
+  },
+  "footer": {
+    "lang": "Langue",
+    "rights": "Tous droits réservés."
+  }
+}

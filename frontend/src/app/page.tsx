@@ -68,20 +68,20 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-24 max-w-7xl mx-auto px-6 flex flex-col lg:flex-row gap-16 relative z-10 -mt-20">
         <div className="lg:w-1/3 pt-10">
-          <h2 className="font-serif text-3xl font-bold text-[#085041] mb-6">{t.nav.features}</h2>
+          <h2 className="font-serif text-3xl font-bold text-[#085041] mb-6">{t.home_features.title}</h2>
           <p className="text-[#5F5E5A] leading-relaxed font-light mb-8">
-            Nous fournissons une suite d'outils de communication et de diagnostic IA. Notre plateforme permet de construire des expériences d'engagement patient supérieures sans la complexité liée aux opérateurs mobiles.
+            {t.home_features.desc}
           </p>
         </div>
 
         <div className="lg:w-2/3 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { title: "USSD Triage", icon: Phone, desc: "Des menus interactifs accessibles sur tous les types de téléphones mobiles." },
-            { title: "FAST AI Agent", icon: Activity, desc: "Évaluez les symptômes d'AVC instantanément avec nos modèles Gemini intégrés." },
-            { title: "SMS Alerts", icon: MessageSquare, desc: "Communiquez efficacement avec les patients et les équipes d'urgence par SMS." },
-            { title: "Multilingual", icon: Globe, desc: "Support automatique du Hausa, Yoruba, Igbo, Français et Anglais." },
-            { title: "Institution Data", icon: HeartPulse, desc: "Synchronisation en temps réel des données patients vers les dashboards." },
-            { title: "Geo-Mapping", icon: MapPin, desc: "Localisation des clusters d'urgence par triangulation des antennes relais." }
+            { title: t.home_features.card1_title, icon: Phone, desc: t.home_features.card1_desc },
+            { title: t.home_features.card2_title, icon: Activity, desc: t.home_features.card2_desc },
+            { title: t.home_features.card3_title, icon: HeartPulse, desc: t.home_features.card3_desc },
+            { title: t.home_features.card4_title, icon: Globe, desc: t.home_features.card4_desc },
+            { title: t.home_features.card5_title, icon: Activity, desc: t.home_features.card5_desc },
+            { title: t.home_features.card6_title, icon: MapPin, desc: t.home_features.card6_desc }
           ].map((item, i) => (
             <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-[#F1EFE8] hover:shadow-md transition-all group">
               <div className="h-24 w-20 bg-[#E1F5EE] rounded-xl mb-6 mx-auto relative flex items-center justify-center group-hover:-translate-y-1 transition-transform">

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"; // build-refresh-v2
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
