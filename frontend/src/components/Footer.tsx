@@ -1,73 +1,212 @@
 "use client";
 import Link from "next/link";
-import { MessageSquare, Globe } from "lucide-react";
+import { MessageSquare, Globe, ExternalLink, Code2, Users2, Mail, ArrowRight, Heart } from "lucide-react";
 import { Logo } from "./Navbar";
 import { useTranslation } from "@/context/LanguageContext";
+import { useTheme } from "@/context/ThemeContext";
+
+const columns = [
+  {
+    title: "Produit",
+    links: [
+      { label: "SMS & USSD",  href: "/product" },
+      { label: "IA de triage", href: "/product" },
+      { label: "Dashboards",   href: "/institutions" },
+      { label: "API REST",     href: "/developers" },
+    ],
+  },
+  {
+    title: "Ressources",
+    links: [
+      { label: "Documentation", href: "/developers" },
+      { label: "FAQ",           href: "/faq" },
+      { label: "GitHub",        href: "#" },
+      { label: "Statut",        href: "#" },
+    ],
+  },
+  {
+    title: "Mission",
+    links: [
+      { label: "Notre histoire", href: "/about" },
+      { label: "Institutions",   href: "/institutions" },
+      { label: "Contact",        href: "/about" },
+      { label: "Carrières",      href: "#" },
+    ],
+  },
+  {
+    title: "Légal",
+    links: [
+      { label: "CGU",            href: "#" },
+      { label: "Confidentialité",href: "#" },
+      { label: "Mentions légales",href: "#" },
+    ],
+  },
+];
 
 export default function Footer() {
   const { t, language, setLanguage } = useTranslation();
+  const { isDark } = useTheme();
+
+  const footerBg = isDark
+    ? 'linear-gradient(180deg, #040F0C 0%, #020A07 100%)'
+    : 'linear-gradient(180deg, #EBF4EF 0%, #E2EFE9 100%)';
+
+  const stripBg = isDark
+    ? 'rgba(13, 122, 95, 0.06)'
+    : 'rgba(13, 122, 95, 0.05)';
 
   return (
-    <footer className="bg-[#04342C] text-[#E1F5EE] pt-20 pb-10">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-5 gap-8 mb-16">
-        <div className="col-span-2 md:col-span-1">
-          <Link href="/" className="font-serif font-bold text-xl mb-6 flex items-center gap-2">
-            <Logo className="w-6 h-6 text-[#1D9E75]" />
-            NeuroAlert
-          </Link>
-        </div>
-        <div>
-          <h4 className="font-bold mb-6 text-sm text-white">{t.nav.features.toUpperCase()}</h4>
-          <ul className="space-y-4">
-            <li><Link href="/product" className="hover:text-white transition-colors text-xs font-light">SMS & USSD</Link></li>
-            <li><Link href="/product" className="hover:text-white transition-colors text-xs font-light">FAST AI</Link></li>
-            <li><Link href="/institutions" className="hover:text-white transition-colors text-xs font-light">Dashboards</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-bold mb-6 text-sm text-white">RESSOURCES</h4>
-          <ul className="space-y-4">
-            <li><Link href="/faq" className="hover:text-white transition-colors text-xs font-light">{t.nav.faq}</Link></li>
-            <li><Link href="/developers" className="hover:text-white transition-colors text-xs font-light">{t.nav.developers} & API</Link></li>
-            <li><a href="#" className="hover:text-white transition-colors text-xs font-light">GitHub</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-bold mb-6 text-sm text-white">NOTRE MISSION</h4>
-          <ul className="space-y-4">
-            <li><Link href="/about" className="hover:text-white transition-colors text-xs font-light">Notre Histoire</Link></li>
-            <li><Link href="/about" className="hover:text-white transition-colors text-xs font-light">Contact</Link></li>
-            <li><a href="#" className="hover:text-white transition-colors text-xs font-light">Carrières</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-bold mb-6 text-sm text-white">LÉGAL</h4>
-          <ul className="space-y-4">
-            <li><a href="#" className="hover:text-white transition-colors text-xs font-light">Conditions d'utilisation</a></li>
-            <li><a href="#" className="hover:text-white transition-colors text-xs font-light">Confidentialité</a></li>
-          </ul>
+    <footer style={{ background: footerBg, borderTop: '1px solid var(--border-subtle)' }}>
+
+      {/* Newsletter strip */}
+      <div style={{ borderBottom: '1px solid var(--border-subtle)', background: stripBg }}>
+        <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <div className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: 'var(--primary-light)', opacity: isDark ? 0.6 : 0.8 }}>
+              Newsletter
+            </div>
+            <h3 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>
+              Restez informé des avancées
+            </h3>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+              Recevez nos mises à jour sur NeuroAlert Africa.
+            </p>
+          </div>
+          <form className="flex gap-3 w-full max-w-sm" onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="email"
+              placeholder="votre@email.com"
+              className="flex-1 px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors"
+              style={{
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)',
+                border: '1px solid var(--border-mid)',
+                color: 'var(--text-primary)',
+              }}
+            />
+            <button type="submit" className="btn-primary text-sm py-3 px-5 gap-2 whitespace-nowrap">
+              S'inscrire <ArrowRight size={13} />
+            </button>
+          </form>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 border-t border-[#085041] pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-xs font-light opacity-60">
-        <div>NeuroAlert Africa. {t.footer.rights} © 2026</div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3 bg-[#085041] px-4 py-2 rounded-full border border-white/10">
-            <Globe size={14} className="text-[#9FE1CB]" />
-            <div className="flex gap-2 font-bold uppercase tracking-widest transition-all">
-              <span 
-                className={`cursor-pointer hover:text-[#9FE1CB] transition-colors ${language === 'fr' ? 'text-white' : 'text-white/40'}`}
-                onClick={() => setLanguage('fr')}
-              >FR</span>
-              <span className="text-white/40">|</span>
-              <span 
-                className={`cursor-pointer hover:text-[#9FE1CB] transition-colors ${language === 'en' ? 'text-white' : 'text-white/40'}`}
-                onClick={() => setLanguage('en')}
-              >EN</span>
+      {/* Main grid */}
+      <div className="max-w-7xl mx-auto px-6 pt-16 pb-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-10 mb-16">
+
+          {/* Brand */}
+          <div className="col-span-2">
+            <Link href="/" className="flex items-center gap-2.5 mb-5 group">
+              <div style={{ color: 'var(--primary-light)' }}>
+                <Logo className="w-8 h-8" />
+              </div>
+              <span className="font-black text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                Neuro<span style={{ color: 'var(--primary-light)' }}>Alert</span>
+              </span>
+            </Link>
+            <p className="text-sm leading-relaxed mb-6 max-w-xs" style={{ color: 'var(--text-muted)' }}>
+              Solution IA de dépistage précoce de l'AVC accessible via USSD partout en Afrique, sans internet.
+            </p>
+            {/* Social */}
+            <div className="flex gap-3">
+              {[
+                { icon: ExternalLink, href: '#', label: 'Twitter' },
+                { icon: Code2,        href: '#', label: 'GitHub' },
+                { icon: Users2,       href: '#', label: 'LinkedIn' },
+                { icon: Mail,         href: '#', label: 'Email' },
+              ].map(({ icon: Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:-translate-y-0.5"
+                  style={{
+                    background: 'var(--glass)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-muted)',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary-light)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                >
+                  <Icon size={15} />
+                </a>
+              ))}
             </div>
           </div>
-          <div className="w-10 h-10 bg-[#085041] rounded-full flex items-center justify-center hover:bg-[#1D9E75] transition-colors cursor-pointer text-white shadow-lg">
-            <MessageSquare size={16} />
+
+          {/* Nav columns */}
+          {columns.map((col) => (
+            <div key={col.title}>
+              <h4 className="text-xs font-black tracking-widest uppercase mb-5" style={{ color: 'var(--text-primary)' }}>
+                {col.title}
+              </h4>
+              <ul className="space-y-3">
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm transition-all hover:translate-x-1 inline-block"
+                      style={{ color: 'var(--text-muted)' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary-light)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom bar */}
+        <div
+          className="flex flex-col md:flex-row justify-between items-center gap-5 pt-8"
+          style={{ borderTop: '1px solid var(--border-subtle)' }}
+        >
+          <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+            <span>© {new Date().getFullYear()} NeuroAlert Africa.</span>
+            <span className="mx-1">Fait avec</span>
+            <Heart size={10} className="text-[#E84040]" fill="#E84040" />
+            <span className="ml-1">pour l'Afrique.</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Language toggle */}
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
+              style={{ background: 'var(--glass)', border: '1px solid var(--border-subtle)' }}
+            >
+              <Globe size={12} style={{ color: 'var(--primary-light)' }} />
+              {(['fr', 'en'] as const).map((lang, i) => (
+                <>
+                  {i > 0 && <span key="sep" style={{ color: 'var(--text-muted)' }}>|</span>}
+                  <button
+                    key={lang}
+                    onClick={() => setLanguage(lang)}
+                    className="font-bold uppercase transition-colors"
+                    style={{ color: language === lang ? 'var(--primary-light)' : 'var(--text-muted)' }}
+                  >
+                    {lang}
+                  </button>
+                </>
+              ))}
+            </div>
+
+            {/* Chat */}
+            <button
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all hover:-translate-y-0.5"
+              style={{
+                background: 'var(--glass)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-muted)',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary-light)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+            >
+              <MessageSquare size={12} />
+              <span>Chat support</span>
+            </button>
           </div>
         </div>
       </div>
