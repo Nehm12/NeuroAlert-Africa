@@ -7,10 +7,12 @@ import { useTranslation } from "@/context/LanguageContext";
 import { dashboardApi, type AlertItem, type DashboardSummary, type TriageFeedItem } from "@/lib/api";
 import { Logo } from "@/components/Navbar";
 import {
-  Activity, AlertTriangle, BellRing, CheckCircle, ChevronRight,
+  Activity, AlertTriangle, BellRing, BookOpen, CheckCircle, ChevronRight,
   Clock, Globe, HeartPulse, LayoutDashboard, LogOut, MapPin,
-  RefreshCw, Shield, Users, Zap,
+  RefreshCw, Shield, Users, Zap, Building2, ListTree, TrendingUp, User
 } from "lucide-react";
+
+import { type Institution, type AuditLog, type InstitutionUser, type DashboardStats } from "@/lib/api";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -109,9 +111,86 @@ function AlertRow({ alert, onAck, onResolve, role, t }: {
   );
 }
 
+function VisualAnalytics({ data }: { data: DashboardStats[] }) {
+  if (data.length < 2) return null;
+  
+  const maxSessions = Math.max(...data.map(d => d.total_sessions), 10);
+  const width = 800;
+  const height = 200;
+  const padding = 20;
+
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * (width - padding * 2) + padding;
+    const y = height - ((d.total_sessions / maxSessions) * (height - padding * 2) + padding);
+    return `${x},${y}`;
+  }).join(" ");
+
+  const areaPoints = `${points} ${width - padding},${height} ${padding},${height}`;
+
+  return (
+    <div className="w-full bg-white/3 border border-white/5 rounded-2xl p-6 mt-6">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <div className="text-[10px] text-[#1AEEAF] font-black uppercase tracking-[0.3em] mb-1">Analyse Temporelle</div>
+          <div className="text-white text-lg font-bold">Sessions USSD (7 derniers jours)</div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#1D9E75]" />
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">Activité GSM</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="relative h-[200px] w-full">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+          <defs>
+            <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1D9E75" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#1D9E75" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          
+          {/* Grid Lines */}
+          {[0, 0.25, 0.5, 0.75, 1].map(v => (
+            <line key={v} x1={padding} y1={padding + (height - padding * 2) * v} x2={width - padding} y2={padding + (height - padding * 2) * v} stroke="white" strokeOpacity="0.05" strokeDasharray="4 4" />
+          ))}
+
+          {/* Area */}
+          <polyline points={areaPoints} fill="url(#gradient)" />
+          
+          {/* Path */}
+          <polyline points={points} fill="none" stroke="#1D9E75" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          
+          {/* Data Points */}
+          {data.map((d, i) => {
+            const x = (i / (data.length - 1)) * (width - padding * 2) + padding;
+            const y = height - ((d.total_sessions / maxSessions) * (height - padding * 2) + padding);
+            return (
+              <g key={i} className="group cursor-pointer">
+                <circle cx={x} cy={y} r="4" fill="#1D9E75" className="drop-shadow-[0_0_8px_rgba(29,158,117,0.5)]" />
+                <circle cx={x} cy={y} r="12" fill="white" fillOpacity="0" />
+                <text x={x} y={y - 15} textAnchor="middle" className="text-[9px] fill-white/40 font-mono opacity-0 group-hover:opacity-100 transition-opacity">{d.total_sessions}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      <div className="flex justify-between mt-4 px-2">
+        {data.map((d, i) => (
+          <div key={i} className="text-[10px] text-white/20 font-mono">
+            {new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "alerts" | "feed" | "users";
+type Tab = "overview" | "alerts" | "feed" | "users" | "institutions" | "logs" | "profile";
 
 export default function DashboardPage() {
   const { user, role, institutionName, isAuthenticated, isLoading, logout } = useAuth();
@@ -119,10 +198,15 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const [tab, setTab] = useState<Tab>("overview");
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [alertsTotal, setAlertsTotal] = useState(0);
   const [feed, setFeed] = useState<TriageFeedItem[]>([]);
+  const [users, setUsers] = useState<InstitutionUser[]>([]);
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [history, setHistory] = useState<DashboardStats[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [alertFilter, setAlertFilter] = useState<string>("active");
   const [refreshing, setRefreshing] = useState(false);
@@ -135,15 +219,31 @@ export default function DashboardPage() {
     if (!isAuthenticated) return;
     setRefreshing(true);
     try {
-      const [statsRes, alertsRes, feedRes] = await Promise.all([
+      const [statsRes, alertsRes, feedRes, historyRes] = await Promise.all([
         dashboardApi.getStats(),
         dashboardApi.getAlerts({ status: alertFilter, per_page: 20 }),
         dashboardApi.getTriageFeed(15),
+        dashboardApi.getHistory(7),
       ]);
       setSummary(statsRes);
       setAlerts(alertsRes.data);
       setAlertsTotal(alertsRes.total);
       setFeed(feedRes);
+      setHistory(historyRes);
+
+      if (role === "super_admin" || role === "institution") {
+        const usersRes = await dashboardApi.getUsers();
+        setUsers(usersRes);
+      }
+
+      if (role === "super_admin") {
+        const [instRes, logsRes] = await Promise.all([
+          dashboardApi.getInstitutions(),
+          dashboardApi.getAuditLogs(),
+        ]);
+        setInstitutions(instRes);
+        setLogs(logsRes);
+      }
     } catch (e) {
       console.error("Dashboard fetch error:", e);
     } finally {
@@ -188,15 +288,19 @@ export default function DashboardPage() {
 
   const navItems: { id: Tab; icon: React.ComponentType<{size?: number}>; label: string }[] = [
     { id: "overview", icon: LayoutDashboard, label: t.dashboard.nav_overview },
-    { id: "alerts", icon: BellRing, label: t.dashboard.nav_alerts },
     { id: "feed", icon: Activity, label: t.dashboard.nav_feed },
-    ...(role === "admin" ? [{ id: "users" as Tab, icon: Users, label: t.dashboard.nav_users }] : []),
+    { id: "alerts", icon: BellRing, label: t.dashboard.nav_alerts },
+    ...(role === "super_admin" || role === "institution" ? [{ id: "users" as Tab, icon: Users, label: t.dashboard.nav_users }] : []),
+    ...(role === "super_admin" ? [
+      { id: "institutions" as Tab, icon: Building2, label: t.dashboard.nav_institutions },
+      { id: "logs" as Tab, icon: ListTree, label: t.dashboard.nav_logs }
+    ] : []),
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] flex">
+    <div className="min-h-screen bg-[#0a0a0b] flex overflow-hidden">
       {/* ── Sidebar ───────────────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex flex-col w-64 bg-[#04342C]/80 backdrop-blur-xl border-r border-white/5 p-6">
+      <aside className="hidden lg:flex flex-col w-64 bg-[#04342C]/80 backdrop-blur-xl border-r border-white/5 p-6 h-screen sticky top-0 shrink-0">
         <Link href="/" className="flex items-center gap-2.5 mb-10">
           <Logo className="w-8 h-8 text-[#04342C]" />
           <span className="text-white font-bold text-base tracking-tighter">
@@ -204,33 +308,46 @@ export default function DashboardPage() {
           </span>
         </Link>
 
-        <div className="mb-8">
-          <div className="text-[9px] font-black text-[#1AEEAF] tracking-[0.4em] uppercase mb-1">{t.dashboard.institution_label}</div>
-          <div className="text-white text-sm font-bold truncate">{institutionName || "—"}</div>
+        <div className="mb-8 p-4 bg-white/5 border border-white/10 rounded-2xl">
+          <div className="text-[9px] font-black text-[#1AEEAF] tracking-[0.4em] uppercase mb-1">
+            {role === "super_admin" ? "Administration" : t.dashboard.institution_label}
+          </div>
+          <div className="text-white text-sm font-bold truncate">
+            {role === "super_admin" ? "NeuroAlert Global" : (institutionName || "—")}
+          </div>
           <div className="flex items-center gap-1.5 mt-1">
-            <span className={`w-1.5 h-1.5 rounded-full ${role === "admin" ? "bg-[#EF9F27]" : "bg-[#1D9E75]"}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${role === "super_admin" ? "bg-[#EF9F27]" : "bg-[#1D9E75]"}`} />
             <span className="text-[10px] text-white/40 uppercase tracking-widest">{role}</span>
           </div>
         </div>
 
         <nav className="flex-1 space-y-1">
-          {navItems.map(item => (
-            <button key={item.id} onClick={() => setTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
-                tab === item.id
-                  ? "bg-[#1D9E75] text-white font-bold"
-                  : "text-white/50 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <item.icon size={16} />
-              {item.label}
-              {item.id === "alerts" && summary && summary.active_alerts_count > 0 && (
-                <span className="ml-auto bg-[#E24B4A] text-white text-[9px] font-black px-2 py-0.5 rounded-full">
-                  {summary.active_alerts_count}
-                </span>
-              )}
-            </button>
-          ))}
+          {navItems.map(item => {
+            let badge = null;
+            if (item.id === "alerts" && summary?.active_alerts_count) badge = summary.active_alerts_count;
+            if (item.id === "feed" && summary?.pending_sessions_count) badge = summary.pending_sessions_count;
+            if (item.id === "institutions" && institutions.length > 0) badge = institutions.length;
+            if (item.id === "users" && users.length > 0) badge = users.length;
+            if (item.id === "logs" && logs.length > 0) badge = logs.length;
+
+            return (
+              <button key={item.id} onClick={() => setTab(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
+                  tab === item.id
+                    ? "bg-[#1D9E75] text-white font-bold"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <item.icon size={16} />
+                {item.label}
+                {badge !== null && (
+                  <span className={`ml-auto ${item.id === "alerts" ? "bg-[#E24B4A]" : "bg-white/10"} text-white text-[9px] font-black px-2 py-0.5 rounded-full`}>
+                    {badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="pt-6 border-t border-white/10">
@@ -244,24 +361,67 @@ export default function DashboardPage() {
       </aside>
 
       {/* ── Main Content ──────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top bar */}
-        <header className="bg-[#0a0a0b]/80 backdrop-blur-md border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+        <header className="bg-[#0a0a0b]/80 backdrop-blur-md border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
           <div>
             <h1 className="text-white font-bold text-lg">
-              {navItems.find(n => n.id === tab)?.label || "Dashboard"}
+              {tab === "profile" ? "Mon Profil" : (navItems.find(n => n.id === tab)?.label || "Dashboard")}
             </h1>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#1AEEAF] animate-pulse" />
               <span className="text-[10px] text-white/30 uppercase tracking-widest">{t.dashboard.operational}</span>
             </div>
           </div>
-          <button onClick={fetchData} disabled={refreshing}
-            className="flex items-center gap-2 text-white/40 hover:text-white text-xs font-bold uppercase tracking-widest transition-colors"
-          >
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-            {t.dashboard.refresh}
-          </button>
+
+          <div className="relative">
+            <button 
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="group flex items-center gap-3 p-1 pr-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#1D9E75] to-[#1AEEAF] flex items-center justify-center text-white text-xs font-black shadow-lg">
+                {user?.full_name?.substring(0, 2).toUpperCase() || "NA"}
+              </div>
+              <div className="hidden sm:block text-left">
+                <div className="text-[10px] text-white font-bold leading-tight truncate max-w-[100px]">{user?.full_name || "Utilisateur"}</div>
+                <div className="text-[8px] text-white/30 uppercase tracking-tighter leading-tight">{role}</div>
+              </div>
+            </button>
+
+            {userMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+                <div className="absolute right-0 mt-2 w-56 bg-[#0a0a0b] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-4 border-b border-white/5 bg-white/5">
+                    <p className="text-[10px] text-white/20 uppercase tracking-widest font-black mb-1">Connecté en tant que</p>
+                    <p className="text-white font-bold truncate">{user?.email}</p>
+                  </div>
+                  <div className="p-2">
+                    <button 
+                      onClick={() => { setTab("profile"); setUserMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                      <User size={16} /> Mon Profil
+                    </button>
+                    <button 
+                      onClick={() => { fetchData(); setUserMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                      <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} /> Actualiser
+                    </button>
+                  </div>
+                  <div className="p-2 border-t border-white/5">
+                    <button 
+                      onClick={logout}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#E24B4A] hover:bg-[#E24B4A]/10 transition-all font-bold"
+                    >
+                      <LogOut size={16} /> {t.dashboard.logout}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </header>
 
         <main className="flex-1 overflow-auto p-6 space-y-6">
@@ -276,6 +436,9 @@ export default function DashboardPage() {
                 <StatCard icon={BellRing} label={t.dashboard.alerts_l1} value={summary?.today.total_alerts_l1 ?? "—"} sub={t.dashboard.alerts_l1_sub} color="bg-[#EF9F27]/20 text-[#EF9F27]" />
                 <StatCard icon={Zap} label={t.dashboard.alerts_l2} value={summary?.today.total_alerts_l2 ?? "—"} sub={t.dashboard.alerts_l2_sub} color="bg-[#E24B4A]/20 text-[#E24B4A]" />
               </div>
+
+              {/* ── Dynamic Analytics Chart ── */}
+              <VisualAnalytics data={history} />
 
               <div className="grid lg:grid-cols-2 gap-6">
                 {/* Recent alerts */}
@@ -426,11 +589,135 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── Users Tab (Admin only) ───────────────────────────────────────── */}
-          {tab === "users" && role === "admin" && (
+          {/* ── Users Tab ───────────────────────────────────────────────────────── */}
+          {tab === "users" && (role === "super_admin" || role === "institution") && (
             <div className="bg-white/5 border border-white/10 rounded-[1.5rem] p-6">
               <h2 className="text-white font-bold text-lg mb-6">{t.dashboard.user_mgmt}</h2>
-              <p className="text-white/40 text-sm">Fonctionnalité de gestion complète disponible via API.</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm text-white/60">
+                  <thead className="text-[10px] uppercase tracking-widest text-white/20 border-b border-white/5">
+                    <tr>
+                      <th className="pb-4 font-black">Nom Full Name</th>
+                      <th className="pb-4 font-black">Rôle</th>
+                      <th className="pb-4 font-black text-right">Dernier Login</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {users.map(u => (
+                      <tr key={u.id} className="group hover:bg-white/3 transition-colors">
+                        <td className="py-4 text-white font-medium">{u.full_name || "—"}</td>
+                        <td className="py-4 font-mono text-[10px]">{u.role}</td>
+                        <td className="py-4 text-right opacity-40">{u.last_login ? timeAgo(u.last_login) : "Jamais"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── Institutions Tab (Super Admin only) ─────────────────────────── */}
+          {tab === "institutions" && role === "super_admin" && (
+            <div className="bg-white/5 border border-white/10 rounded-[1.5rem] p-6">
+              <h2 className="text-white font-bold text-lg mb-6">Gestion des Institutions</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                {institutions.map(inst => (
+                  <div key={inst.id} className="p-5 rounded-2xl bg-white/3 border border-white/5 hover:border-[#1D9E75]/30 transition-all flex justify-between items-start">
+                    <div>
+                      <div className="text-white font-bold mb-1">{inst.name}</div>
+                      <div className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">{inst.type} · {inst.country_code}</div>
+                      <div className="mt-4 flex gap-2">
+                        {inst.alert_zones?.map(z => (
+                          <span key={z} className="px-2 py-1 rounded-md bg-white/5 text-[9px] text-[#1AEEAF] uppercase tracking-widest">{z}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${inst.is_active ? 'bg-[#1D9E75]/20 text-[#1AEEAF]' : 'bg-red-500/20 text-red-400'}`}>
+                      {inst.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Profile Tab ───────────────────────────────────────────────────────── */}
+          {tab === "profile" && (
+            <div className="max-w-2xl mx-auto space-y-6">
+              <div className="bg-white/5 border border-white/10 rounded-[1.5rem] p-8">
+                <div className="flex items-center gap-6 mb-10">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#1D9E75] to-[#1AEEAF] flex items-center justify-center text-white text-3xl font-black shadow-2xl">
+                    {user?.full_name?.substring(0, 2).toUpperCase() || "NA"}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-1">{user?.full_name || "Chargement..."}</h2>
+                    <p className="text-white/40 font-mono text-sm underline decoration-[#1AEEAF]/30">{user?.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-6 pb-10 border-b border-white/5">
+                  <div>
+                    <div className="text-[10px] text-white/20 uppercase tracking-widest font-black mb-2">Rôle Système</div>
+                    <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-white/60 font-mono text-xs">
+                      {role}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-white/20 uppercase tracking-widest font-black mb-2">Institution</div>
+                    <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-white/60 font-medium text-xs">
+                      {role === "super_admin" ? "NeuroAlert Global" : (institutionName || "—")}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-8">
+                  <h3 className="text-white font-bold mb-6">Préférences</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/3 border border-white/5">
+                      <span className="text-white font-medium text-sm">Langue de l'interface</span>
+                      <span className="text-[#1AEEAF] text-xs font-black uppercase tracking-widest">Français</span>
+                    </div>
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/3 border border-white/5">
+                      <span className="text-white font-medium text-sm">Notifications SMS</span>
+                      <span className="text-white/20 text-[9px] font-black uppercase tracking-widest italic font-mono decoration-red-500 line-through">Inactif (Plan Pro requis)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#E24B4A]/5 border border-[#E24B4A]/10 text-center">
+                <p className="text-[10px] text-[#E24B4A] uppercase tracking-widest font-black">Besoin de modifier vos identifiants ?</p>
+                <p className="text-xs text-white/40 mt-1">Contactez votre administrateur réseau ou le support technique NeuroAlert.</p>
+              </div>
+            </div>
+          )}
+          {/* ── Audit Logs Tab (Super Admin only) ─────────────────────────── */}
+          {tab === "logs" && role === "super_admin" && (
+            <div className="bg-white/5 border border-white/10 rounded-[1.5rem] p-6">
+              <h2 className="text-white font-bold text-lg mb-6">Logs d'Audit Système</h2>
+              <div className="space-y-4">
+                {logs.map(log => (
+                  <div key={log.id} className="p-4 rounded-xl bg-white/2 border border-white/5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                        <BookOpen size={14} className="text-white/40" />
+                      </div>
+                      <div>
+                        <div className="text-xs text-white font-mono">{log.action}</div>
+                        <div className="text-[10px] text-white/30">{log.user_full_name || "System"} · {new Date(log.created_at).toLocaleString()}</div>
+                      </div>
+                    </div>
+                    {log.metadata && (
+                      <div className="text-[10px] text-white/20 bg-black/20 p-2 rounded max-w-xs truncate">
+                        {JSON.stringify(log.metadata)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {logs.length === 0 && !loadingData && (
+                  <div className="text-center py-10 text-white/20">Aucun log récent.</div>
+                )}
+              </div>
             </div>
           )}
 

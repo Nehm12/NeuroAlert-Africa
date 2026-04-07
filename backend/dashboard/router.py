@@ -19,6 +19,8 @@ from backend.dashboard.schemas import (
     InstitutionUserResponse,
     CreateUserRequest,
     PaginatedAlerts,
+    InstitutionResponse,
+    AuditLogResponse,
 )
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -40,40 +42,40 @@ async def get_dashboard_stats(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Returns today's aggregated stats for the current user's institution,
-    including active alerts count and pending triage sessions.
+    Returns today's aggregated stats.
+    - super_admin: Global stats across all institutions.
+    - institution: Stats filtered for the user's institution.
     """
+    role = current_user.get("role")
     institution_id = current_user.get("institution_id")
     today = date.today().isoformat()
 
     # Get today's stats from daily_stats table
-    stats_res = (
-        supabase_admin.table("daily_stats")
-        .select("*")
-        .eq("date", today)
-        .maybe_single()
-        .execute()
-    )
+    query = supabase_admin.table("daily_stats").select("*").eq("date", today)
+    
+    if role != "super_admin" and institution_id:
+        # In a real multi-tenant app, daily_stats would have institution_id.
+        # For now, we assume daily_stats is global or we filter alerts specifically.
+        pass
 
-    stats_data = stats_res.data or {}
+    stats_res = query.maybe_single().execute()
+    stats_data = getattr(stats_res, "data", {}) or {}
 
-    # Count active alerts for this institution's zones
-    institution = current_user.get("institutions", {})
-    alert_zones = institution.get("alert_zones", []) if institution else []
+    # Filtering Alerts and Sessions
+    alerts_query = supabase_admin.table("alerts").select("id", count="exact").eq("status", "active")
+    sessions_query = supabase_admin.table("ussd_sessions").select("id", count="exact").eq("status", "active")
 
-    active_alerts_res = (
-        supabase_admin.table("alerts")
-        .select("id", count="exact")
-        .eq("status", "active")
-        .execute()
-    )
+    if role != "super_admin" and institution_id:
+        # Filter by country_code for the 'institution' role as 'zone' column doesn't exist yet
+        institution_data = current_user.get("institution", {})
+        c_code = institution_data.get("country_code")
+        if c_code:
+            alerts_query = alerts_query.eq("country_code", c_code)
+            # ussd_sessions table doesn't have country_code yet, so we don't filter it to avoid crashes
+            pass
 
-    pending_sessions_res = (
-        supabase_admin.table("ussd_sessions")
-        .select("id", count="exact")
-        .eq("status", "active")
-        .execute()
-    )
+    active_alerts_res = alerts_query.execute()
+    pending_sessions_res = sessions_query.execute()
 
     today_stats = DashboardStats(
         date=today,
@@ -91,6 +93,32 @@ async def get_dashboard_stats(
     )
 
 
+@router.get("/history", response_model=list[DashboardStats], summary="Get historical stats (last 7 days)")
+async def get_dashboard_history(
+    days: int = Query(7, ge=1, le=30),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Returns a list of daily stats for the last N days.
+    Used for line charts.
+    """
+    role = current_user.get("role")
+    
+    query = supabase_admin.table("daily_stats").select("*").order("date", desc=True).limit(days)
+    
+    if role != "super_admin":
+        institution_data = current_user.get("institution", {})
+        c_code = institution_data.get("country_code")
+        if c_code:
+            query = query.eq("country_code", c_code)
+
+    res = query.execute()
+    # Return in chronological order for the chart
+    data = res.data or []
+    data.reverse()
+    return [DashboardStats(**d) for d in data]
+
+
 # ── Alerts ─────────────────────────────────────────────────────────────────
 
 @router.get("/alerts", response_model=PaginatedAlerts, summary="List alerts for institution")
@@ -103,7 +131,7 @@ async def list_alerts(
 ):
     """
     Returns a paginated list of alerts. Filterable by status and alert level.
-    Phone numbers are masked for privacy (viewer role only sees masked data).
+    If 'institution' role, results are filtered by institution zones.
     """
     query = supabase_admin.table("alerts").select("*", count="exact").order("created_at", desc=True)
 
@@ -112,6 +140,14 @@ async def list_alerts(
     if alert_level:
         query = query.eq("alert_level", alert_level)
 
+    # Role-based filtering
+    role = current_user.get("role")
+    if role != "super_admin":
+        institution_data = current_user.get("institution", {})
+        c_code = institution_data.get("country_code")
+        if c_code:
+            query = query.eq("country_code", c_code)
+
     # Pagination
     offset = (page - 1) * per_page
     query = query.range(offset, offset + per_page - 1)
@@ -119,13 +155,7 @@ async def list_alerts(
     res = query.execute()
     total = res.count or 0
 
-    # Mask phone for non-admin roles
-    role = current_user.get("role", "viewer")
-    alerts = []
-    for a in (res.data or []):
-        if role == "viewer":
-            a["phone_caller"] = mask_phone(a.get("phone_caller", ""))
-        alerts.append(AlertResponse(**a))
+    alerts = [AlertResponse(**a) for a in (res.data or [])]
 
     return PaginatedAlerts(
         data=alerts,
@@ -143,7 +173,7 @@ async def list_alerts(
 )
 async def acknowledge_alert(
     alert_id: str,
-    current_user: dict = Depends(require_role("admin", "operator")),
+    current_user: dict = Depends(require_role("super_admin", "institution")),
 ):
     """
     Marks an alert as acknowledged. Requires 'admin' or 'operator' role.
@@ -187,7 +217,7 @@ async def acknowledge_alert(
 async def resolve_alert(
     alert_id: str,
     body: AlertResolveRequest,
-    current_user: dict = Depends(require_role("admin", "operator")),
+    current_user: dict = Depends(require_role("super_admin", "institution")),
 ):
     """
     Marks an alert as resolved with optional response time.
@@ -247,9 +277,14 @@ async def get_triage_feed(
         supabase_admin.table("ussd_sessions")
         .select("*")
         .order("started_at", desc=True)
-        .limit(limit)
-        .execute()
     )
+
+    role = current_user.get("role")
+    if role != "super_admin":
+        # ussd_sessions does not have zone or country_code yet
+        pass
+
+    res = res.limit(limit).execute()
 
     items = []
     for s in (res.data or []):
@@ -263,28 +298,66 @@ async def get_triage_feed(
 
 @router.get("/users", response_model=list[InstitutionUserResponse], summary="List institution users")
 async def list_institution_users(
-    current_user: dict = Depends(require_role("admin")),
+    current_user: dict = Depends(require_role("super_admin", "institution")),
 ):
     """
-    Returns the list of all users for the current institution.
-    Admin only.
+    Returns the list of users. 
+    Super Admin sees all, Institution Admin sees only theirs.
     """
+    role = current_user.get("role")
     institution_id = current_user.get("institution_id")
 
+    query = supabase_admin.table("institution_users").select("*")
+    
+    if role != "super_admin":
+        if not institution_id:
+            return []
+        query = query.eq("institution_id", institution_id)
+
+    res = query.execute()
+    return [InstitutionUserResponse(**u) for u in (res.data or [])]
+
+
+@router.get("/institutions", response_model=list[InstitutionResponse], summary="List all institutions")
+async def list_institutions(
+    current_user: dict = Depends(require_role("super_admin")),
+):
+    """
+    Returns the list of all registered institutions.
+    Super Admin only.
+    """
+    res = supabase_admin.table("institutions").select("*").execute()
+    return [InstitutionResponse(**i) for i in (res.data or [])]
+
+
+@router.get("/audit-logs", response_model=list[AuditLogResponse], summary="List system audit logs")
+async def list_audit_logs(
+    current_user: dict = Depends(require_role("super_admin")),
+):
+    """
+    Returns the most recent system audit logs.
+    Super Admin only for now.
+    """
     res = (
-        supabase_admin.table("institution_users")
-        .select("*")
-        .eq("institution_id", institution_id)
+        supabase_admin.table("audit_logs")
+        .select("*, institution_users(full_name)")
+        .order("created_at", desc=True)
+        .limit(100)
         .execute()
     )
-
-    return [InstitutionUserResponse(**u) for u in (res.data or [])]
+    
+    logs = []
+    for log in (res.data or []):
+        log["user_full_name"] = log.get("institution_users", {}).get("full_name")
+        logs.append(AuditLogResponse(**log))
+        
+    return logs
 
 
 @router.post("/users", response_model=InstitutionUserResponse, status_code=201, summary="Create institution user")
 async def create_institution_user(
     body: CreateUserRequest,
-    current_user: dict = Depends(require_role("admin")),
+    current_user: dict = Depends(require_role("super_admin", "institution")),
 ):
     """
     Creates a new user for the current institution via Supabase Auth.

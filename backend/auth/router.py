@@ -68,16 +68,16 @@ async def login(credentials: LoginRequest):
             )
 
         p = profile.data
-        institution = p.get("institutions", {})
+        institution = p.get("institutions") or {}
 
         return LoginResponse(
             access_token=access_token,
             user_id=str(user.id),
             email=user.email,
             full_name=p.get("full_name"),
-            role=p.get("role", "viewer"),
-            institution_id=str(institution.get("id", "")),
-            institution_name=institution.get("name", ""),
+            role=p.get("role", "institution"),
+            institution_id=str(institution.get("id", "")) if institution else "",
+            institution_name=institution.get("name", "") if institution else "NeuroAlert Global",
         )
 
     except HTTPException:
@@ -112,13 +112,13 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     # Update last_login timestamp
     supabase_admin.table("institution_users").update(
         {"last_login": "now()"}
-    ).eq("user_id", current_user["user_id"]).execute()
+    ).eq("user_id", current_user["id"]).execute()
 
     return {
-        "user_id": current_user["user_id"],
+        "user_id": current_user["id"],
         "email": current_user["email"],
         "full_name": current_user.get("full_name"),
         "role": current_user.get("role"),
         "language_pref": current_user.get("language_pref", "fr"),
-        "institution": current_user.get("institutions"),
+        "institution": current_user.get("institution"),
     }

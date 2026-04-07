@@ -46,11 +46,18 @@ async def get_current_user(
                 detail="No institutional profile found for this user.",
             )
 
-        return {
-            "user_id": user.id,
+        # Standardizing user object
+        user_data = {
+            "id": user.id,
             "email": user.email,
-            **profile.data,
+            "role": profile.data.get("role"),
+            "institution_id": profile.data.get("institution_id"),
+            "institution": profile.data.get("institutions"),
+            "full_name": profile.data.get("full_name"),
+            "language_pref": profile.data.get("language_pref"),
         }
+        
+        return user_data
 
     except HTTPException:
         raise
@@ -65,13 +72,14 @@ async def get_current_user(
 def require_role(*roles: str):
     """
     Role-based access control decorator factory.
-    Usage: Depends(require_role("admin", "operator"))
+    Allowed roles: "super_admin", "institution"
     """
     async def role_checker(current_user: dict = Depends(get_current_user)) -> dict:
-        if current_user.get("role") not in roles:
+        user_role = current_user.get("role")
+        if user_role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Access denied. Required role(s): {', '.join(roles)}.",
+                detail=f"Access denied. '{user_role}' role is insufficient. Required: {', '.join(roles)}.",
             )
         return current_user
     return role_checker

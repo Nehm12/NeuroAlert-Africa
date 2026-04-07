@@ -22,9 +22,18 @@ class Settings(BaseSettings):
 
     # JWT
     JWT_ALGORITHM: str = "HS256"
+    JWT_SECRET: str = "dev-secret-only" # Fallback for dev
+
+    # Africa's Talking
+    AT_USERNAME: str = "sandbox"
+    AT_API_KEY: str = ""
+
+    # Google AI
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-1.5-flash"
 
     class Config:
-        env_file = ".env"
+        env_file = "backend/.env"
         case_sensitive = True
 
 

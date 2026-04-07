@@ -15,7 +15,7 @@ class AlertResponse(BaseModel):
     phone_caller: str
     location_text: Optional[str]
     country_code: Optional[str]
-    fast_score: int                # 0-3
+    fast_score: int                # 0-5 (BEFAST)
     ai_risk_score: Optional[float] # 0.0-1.0
     ai_decision: Optional[str]     # low_risk / alert_level1 / alert_level2
     status: str                    # active / acknowledged / resolved / false_positive
@@ -62,7 +62,7 @@ class TriageFeedItem(BaseModel):
     phone_number: str              # Masked: +234*****1234
     language_code: Optional[str]
     current_step: str
-    fast_score: Optional[int]
+    fast_score: Optional[int]      # 0-5
     ai_risk_score: Optional[float]
     ai_decision: Optional[str]
     status: str
@@ -75,7 +75,7 @@ class TriageFeedItem(BaseModel):
 class InstitutionUserResponse(BaseModel):
     id: str
     full_name: Optional[str]
-    role: str                      # admin / operator / viewer
+    role: str                      # super_admin / institution
     language_pref: Optional[str]
     last_login: Optional[datetime]
 
@@ -83,9 +83,34 @@ class InstitutionUserResponse(BaseModel):
 class CreateUserRequest(BaseModel):
     email: str
     full_name: str
-    role: str = "viewer"           # Default role
+    role: str = "institution"      # Default role
     language_pref: str = "fr"
     password: str                  # Admin sets the initial password
+
+
+# ── Institution Schemas ──────────────────────────────────────────────────────
+
+class InstitutionResponse(BaseModel):
+    id: str
+    name: str
+    type: str                      # hospital / clinic / emergency_center
+    country_code: str
+    alert_zones: Optional[List[str]]
+    is_active: bool
+    created_at: datetime
+
+
+# ── Audit Log Schemas ────────────────────────────────────────────────────────
+
+class AuditLogResponse(BaseModel):
+    id: str
+    user_id: Optional[str]
+    action: str                    # alert.acknowledge, user.create, etc.
+    target_id: Optional[str]
+    metadata: Optional[dict]
+    created_at: datetime
+    # Joined fields
+    user_full_name: Optional[str] = None
 
 
 # ── Pagination ────────────────────────────────────────────────────────────────

@@ -30,18 +30,26 @@ logger = logging.getLogger(__name__)
 
 
 class FASTInput(BaseModel):
-    """Réponses structurées du test FAST (issues des choix USSD)."""
+    """Réponses structurées du test B.E.F.A.S.T. (issues des choix USSD)."""
 
+    # B: Balance
+    balance_loss: bool = Field(description="Perte soudaine d'équilibre ou de coordination")
+    # E: Eyes
+    vision_problem: bool = Field(description="Troubles de la vision soudains (vue double, perte de vue)")
+    # F: Face
     face_droop: bool = Field(description="Asymétrie du visage / sourire")
+    # A: Arm
     arm_weakness: bool = Field(description="Faiblesse ou dérive d'un bras")
+    # S: Speech
     speech_difficulty: bool = Field(description="Trouble de la parole ou incompréhension")
+    # T: Time
     time_symptoms_known: Optional[bool] = Field(
         default=None,
-        description="Heure de début des signes connue (lettre T du FAST), si collecté",
+        description="Heure de début des signes connue, si collecté",
     )
     language_code: str = Field(
         default="fr",
-        description="ISO court pour textes générés / SMS : fr, en, ha, yo, ig",
+        description="ISO court pour textes générés / SMS",
     )
 
     @field_validator("language_code")
@@ -62,7 +70,7 @@ AlertDecision = Literal["low_risk", "alert_level1", "alert_level2"]
 class StrokeAnalysisResult(BaseModel):
     """Sortie unique consommée par le backend (logs, SMS, dashboard)."""
 
-    fast_positive_count: int = Field(ge=0, le=3)
+    fast_positive_count: int = Field(ge=0, le=5)
     risk_score: float = Field(ge=0.0, le=1.0, description="Probabilité de suspicion synthétique 0–1")
     urgency_level: Literal["low", "medium", "high"]
     recommendation: str = Field(description="Court message actionnable (USSD END ou SMS)")
@@ -78,41 +86,44 @@ class StrokeAnalysisResult(BaseModel):
 
 def _compute_rule_metrics(inp: FASTInput) -> tuple[int, float, UrgencyLevel, str, str]:
     """
-    Compte les signes FAST positifs et dérive urgence + texte court.
-
-    Convention MVP (alignée triage communautaire) :
-    - 0 signe : faible urgence (risque AVC faible sur ce test ; ne remplace pas un avis médical).
-    - 1 signe : urgence modérée → alerte niveau 1 (proches / suivi).
-    - 2–3 signes : urgence élevée → alerte niveau 2 (urgences + proches).
+    Compte les signes BEFAST positifs et dérive l'urgence.
+    Standard Médical : ANY sign (B,E,F,A,S) is a potential stroke.
     """
-    n = int(inp.face_droop) + int(inp.arm_weakness) + int(inp.speech_difficulty)
-    risk = n / 3.0
+    signs = [
+        inp.balance_loss,
+        inp.vision_problem,
+        inp.face_droop,
+        inp.arm_weakness,
+        inp.speech_difficulty
+    ]
+    n = sum(1 for s in signs if s)
+    risk = n / 5.0
 
     if n == 0:
         urg = UrgencyLevel.low
         rec = (
-            "Aucun signe FAST évident ici. En cas de doute ou symptômes persistants, "
-            "contactez un professionnel de santé. En urgence vitale, appelez les secours."
+            "Aucun signe BEFAST évident. En cas de doute ou symptômes persistants, "
+            "contactez un professionnel. En urgence vitale, appelez les secours."
         )
     elif n == 1:
         urg = UrgencyLevel.medium
         rec = (
-            "Au moins un signe d'alerte : considérez un AVC possible. "
-            "Appelez immédiatement les secours ou rendez-vous aux urgences."
+            "Au moins un signe d'alerte BEFAST détecté. Un AVC est possible. "
+            "Appelez immédiatement les secours."
         )
     else:
         urg = UrgencyLevel.high
         rec = (
-            "Plusieurs signes FAST positifs : urgence vitale probable. "
-            "Appelez les secours tout de suite. Ne pas conduire. Notez l'heure des signes."
+            "Plusieurs signes BEFAST positifs : urgence vitale probable. "
+            "Appelez les secours tout de suite. Notez l'heure des signes."
         )
 
     if inp.time_symptoms_known is False and n >= 1:
-        rec += " Notez l'heure exacte du début des symptômes pour les équipes médicales."
+        rec += " Notez l'heure exacte du début des symptômes."
 
     rationale = (
-        f"FAST: {n}/3 positifs (visage={inp.face_droop}, bras={inp.arm_weakness}, "
-        f"parole={inp.speech_difficulty})."
+        f"BEFAST: {n}/5 positifs (B={inp.balance_loss}, E={inp.vision_problem}, "
+        f"F={inp.face_droop}, A={inp.arm_weakness}, S={inp.speech_difficulty})."
     )
     return n, risk, urg, rec.strip(), rationale
 
@@ -158,23 +169,25 @@ def _gemini_json_refinement(
         "risk_score": "number 0-1 cohérent avec les signes FAST",
     }
 
-    prompt = f"""Tu es un assistant médical pour NeuroAlert Africa (dépistage communautaire AVC, test FAST).
+    prompt = f"""Tu es un assistant médical pour NeuroAlert Africa (dépistage communautaire AVC, test B.E.F.A.S.T.).
 
-Données (issues d'un menu USSD, pas un examen clinique) :
-- Visage asymétrique : {inp.face_droop}
-- Bras faible / dérive : {inp.arm_weakness}
-- Parole trouble : {inp.speech_difficulty}
-- Heure des signes connue : {inp.time_symptoms_known!s}
-- Langue des textes : {inp.language_code}
+Données (issues d'un menu USSD) :
+- B (Balance) Perte équilibre : {inp.balance_loss}
+- E (Eyes) Vision trouble : {inp.vision_problem}
+- F (Face) Visage asymétrique : {inp.face_droop}
+- A (Arms) Bras faible / dérive : {inp.arm_weakness}
+- S (Speech) Parole trouble : {inp.speech_difficulty}
+- T (Time) Heure des signes connue : {inp.time_symptoms_known!s}
+- Langue : {inp.language_code}
 
 Analyse déjà calculée par règles :
-- Signes positifs : {base.fast_positive_count}/3
+- Signes positifs : {base.fast_positive_count}/5
 - Score risque initial : {base.risk_score}
 - Urgence : {base.urgency_level}
 
 Réponds UNIQUEMENT en JSON valide selon ce schéma : {json.dumps(schema_hint)}
-- Ne pas inventer d'examen clinique. Rester prudent, orienter vers les secours si doute.
-- Textes courts pour SMS / écran téléphone basique.
+- Ne pas inventer d'examen clinique. Urgentiste virtuel.
+- Textes courts pour écran téléphone basique.
 """
 
     config = GenerationConfig(
@@ -303,7 +316,12 @@ class NeuroAlertModel:
     @staticmethod
     def decide_alert(result: StrokeAnalysisResult) -> AlertDecision:
         """Décision alignée sur la base (champs ai_decision du schéma SQL)."""
-        return _map_urgency_to_alert(result.fast_positive_count)
+        n = result.fast_positive_count
+        if n == 0:
+            return "low_risk"
+        if n == 1:
+            return "alert_level1"
+        return "alert_level2"
 
     def get_first_aid(self, language_code: str = "fr") -> str:
         return first_aid_text(language_code)

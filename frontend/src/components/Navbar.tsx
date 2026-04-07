@@ -34,7 +34,10 @@ export default function Navbar() {
     setIsMenuOpen(false);
   }, [pathname]);
 
-  const isHomepage = pathname === '/';
+  const isDashboard = pathname?.startsWith("/dashboard");
+  if (isDashboard) return null;
+
+  const isHomepage = pathname === "/";
   const navWhiteActive = isScrolled || !isHomepage;
 
   return (

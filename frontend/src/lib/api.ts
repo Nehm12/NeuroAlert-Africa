@@ -41,7 +41,7 @@ export interface LoginResponse {
   user_id: string;
   email: string;
   full_name: string | null;
-  role: "admin" | "operator" | "viewer";
+  role: string; // super_admin / institution
   institution_id: string;
   institution_name: string;
 }
@@ -121,6 +121,26 @@ export interface InstitutionUser {
   last_login: string | null;
 }
 
+export interface Institution {
+  id: string;
+  name: string;
+  type: string;
+  country_code: string;
+  alert_zones: string[] | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AuditLog {
+  id: string;
+  user_id: string | null;
+  action: string;
+  target_id: string | null;
+  metadata: any;
+  created_at: string;
+  user_full_name: string | null;
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 export const authApi = {
@@ -174,4 +194,10 @@ export const dashboardApi = {
     apiFetch<TriageFeedItem[]>(`/dashboard/triage-feed?limit=${limit}`),
 
   getUsers: () => apiFetch<InstitutionUser[]>("/dashboard/users"),
+
+  getInstitutions: () => apiFetch<Institution[]>("/dashboard/institutions"),
+
+  getAuditLogs: () => apiFetch<AuditLog[]>("/dashboard/audit-logs"),
+
+  getHistory: (days = 7) => apiFetch<DashboardStats[]>(`/dashboard/history?days=${days}`),
 };

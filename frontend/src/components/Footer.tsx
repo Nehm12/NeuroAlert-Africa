@@ -1,11 +1,15 @@
 "use client";
 import Link from "next/link";
-import { MessageSquare, Globe } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { Logo } from "./Navbar";
 import { useTranslation } from "@/context/LanguageContext";
 
 export default function Footer() {
   const { t, language, setLanguage } = useTranslation();
+  const pathname = usePathname();
+
+  const isDashboard = pathname?.startsWith("/dashboard");
+  if (isDashboard) return null;
 
   return (
     <footer className="bg-[#04342C] text-[#E1F5EE] pt-20 pb-10">
