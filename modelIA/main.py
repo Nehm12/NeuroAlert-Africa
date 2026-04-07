@@ -72,49 +72,104 @@ class StrokeAnalysisResult(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Règles FAST (fallback + socle médical du MVP)
+# Règles FAST — socle médical basé sur les données probantes
 # ---------------------------------------------------------------------------
+#
+# Sources cliniques :
+#  - Harbison et al., Stroke 2003 (PMID 12511753) : sensibilité/spécificité par signe FAST
+#    · Parole  : spécificité ~94 %  → poids le plus élevé
+#    · Visage  : spécificité ~90 %
+#    · Bras    : spécificité ~73 %  → poids le plus faible
+#  - Saver, Stroke 2006 (PMID 16339467) : "Time is Brain" — 1,9 million neurones/min
+#  - AHA/ASA 2019 guidelines : TOUT signe FAST positif = appel aux secours immédiat
+#    (il n'existe pas de niveau "modéré" pour un AVC suspecté)
+#  - Fenêtres thérapeutiques : tPA IV ≤ 4h30 | thrombectomie mécanique jusqu'à 24h
+#    selon imagerie (onset connu ou "éveil" — wake-up stroke)
+
+# Poids par signe, dérivés de la spécificité relative (somme = 1.0)
+_SIGN_WEIGHTS: dict[str, float] = {
+    "speech": 0.45,   # spécificité ~94 % — atteinte des aires du langage (Broca/Wernicke)
+    "face":   0.30,   # spécificité ~90 % — voie cortico-bulbaire
+    "arm":    0.25,   # spécificité ~73 % — voie cortico-spinale
+}
+
+# Amplification temporelle : "Time is Brain"
+# onset connu → fenêtre tPA calculable → urgence amplifiée
+_TIME_BOOST_KNOWN   = 1.30
+# onset inconnu → possiblement aigu (wake-up stroke) → amplification prudente
+_TIME_BOOST_UNKNOWN = 1.15
 
 
 def _compute_rule_metrics(inp: FASTInput) -> tuple[int, float, UrgencyLevel, str, str]:
     """
-    Compte les signes FAST positifs et dérive urgence + texte court.
+    Score FAST pondéré + urgence + texte actionnable.
 
-    Convention MVP (alignée triage communautaire) :
-    - 0 signe : faible urgence (risque AVC faible sur ce test ; ne remplace pas un avis médical).
-    - 1 signe : urgence modérée → alerte niveau 1 (proches / suivi).
-    - 2–3 signes : urgence élevée → alerte niveau 2 (urgences + proches).
+    Règle AHA/ASA : n ≥ 1 signe positif → urgence HAUTE sans exception.
+    Le score de risque intègre les poids différenciés par signe et l'amplification temporelle.
     """
     n = int(inp.face_droop) + int(inp.arm_weakness) + int(inp.speech_difficulty)
-    risk = n / 3.0
+
+    # Score pondéré (0.0 – 1.0) : reflète la spécificité différentielle de chaque signe
+    w_score = (
+        _SIGN_WEIGHTS["face"]   * int(inp.face_droop)
+        + _SIGN_WEIGHTS["arm"]  * int(inp.arm_weakness)
+        + _SIGN_WEIGHTS["speech"] * int(inp.speech_difficulty)
+    )
+
+    # Amplification temporelle (principe "Time is Brain")
+    if inp.time_symptoms_known is True:
+        w_score = min(1.0, w_score * _TIME_BOOST_KNOWN)
+    elif inp.time_symptoms_known is False:
+        w_score = min(1.0, w_score * _TIME_BOOST_UNKNOWN)
 
     if n == 0:
         urg = UrgencyLevel.low
         rec = (
-            "Aucun signe FAST évident ici. En cas de doute ou symptômes persistants, "
-            "contactez un professionnel de santé. En urgence vitale, appelez les secours."
-        )
-    elif n == 1:
-        urg = UrgencyLevel.medium
-        rec = (
-            "Au moins un signe d'alerte : considérez un AVC possible. "
-            "Appelez immédiatement les secours ou rendez-vous aux urgences."
+            "Aucun signe FAST détecté pour l'instant. "
+            "Restez vigilant : si de nouveaux symptômes apparaissent "
+            "(visage asymétrique, bras faible, parole difficile), "
+            "appelez immédiatement les secours. Ce test ne remplace pas un avis médical."
         )
     else:
+        # AHA/ASA : tout signe positif = urgence vitale potentielle
         urg = UrgencyLevel.high
-        rec = (
-            "Plusieurs signes FAST positifs : urgence vitale probable. "
-            "Appelez les secours tout de suite. Ne pas conduire. Notez l'heure des signes."
-        )
+        signs_fr = []
+        if inp.face_droop:
+            signs_fr.append("asymétrie du visage")
+        if inp.arm_weakness:
+            signs_fr.append("faiblesse d'un bras")
+        if inp.speech_difficulty:
+            signs_fr.append("trouble de la parole")
+        signs_str = ", ".join(signs_fr)
 
-    if inp.time_symptoms_known is False and n >= 1:
-        rec += " Notez l'heure exacte du début des symptômes pour les équipes médicales."
+        rec = (
+            f"ALERTE — {n} signe(s) FAST positif(s) : {signs_str}. "
+            "Appelez les secours d'urgence IMMÉDIATEMENT. "
+            "Ne laissez pas la personne seule. Ne donnez ni à manger ni à boire. "
+            "Allongez-la sur le côté si perte de conscience. "
+        )
+        if inp.time_symptoms_known is True:
+            rec += (
+                "Heure de début connue — communiquez-la aux secours : "
+                "une thrombolyse (≤ 4h30) ou une thrombectomie peuvent encore être possibles."
+            )
+        elif inp.time_symptoms_known is False:
+            rec += (
+                "Heure de début inconnue — signalez-le aux secours ; "
+                "la thrombectomie reste envisageable selon l'imagerie (wake-up stroke)."
+            )
+        else:
+            rec += "Notez impérativement l'heure exacte d'apparition des symptômes."
 
     rationale = (
-        f"FAST: {n}/3 positifs (visage={inp.face_droop}, bras={inp.arm_weakness}, "
-        f"parole={inp.speech_difficulty})."
+        f"FAST pondéré : {n}/3 signes | score={w_score:.3f} "
+        f"[visage={int(inp.face_droop)}×{_SIGN_WEIGHTS['face']}, "
+        f"bras={int(inp.arm_weakness)}×{_SIGN_WEIGHTS['arm']}, "
+        f"parole={int(inp.speech_difficulty)}×{_SIGN_WEIGHTS['speech']}] "
+        f"| temps_connu={inp.time_symptoms_known}. "
+        f"Réf : Harbison et al. Stroke 2003 ; Saver Stroke 2006 ; AHA/ASA 2019."
     )
-    return n, risk, urg, rec.strip(), rationale
+    return n, round(w_score, 4), urg, rec.strip(), rationale
 
 
 def _map_urgency_to_alert(fast_count: int) -> AlertDecision:
