@@ -73,7 +73,42 @@ async def root():
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    return {"status": "healthy", "timestamp": __import__("datetime").datetime.utcnow().isoformat()}
+    from backend.database import supabase
+    from backend.agents import agents
+    
+    # 1. Test Database
+    try:
+        supabase.table("users").select("count", count="exact").limit(1).execute()
+        db_status = "connected"
+    except Exception:
+        db_status = "error"
+
+    # 2. Test IA Model
+    try:
+        # Simple non-LLM check first
+        from backend.modelIA.main import FASTInput
+        test_input = FASTInput(
+            balance_loss=False, vision_problem=False, face_droop=False, 
+            arm_weakness=False, speech_difficulty=False
+        )
+        ai_result = await agents.analyse_fast_symptoms(
+            face=False, arm=False, speech=False
+        )
+        ai_status = "ready" if ai_result else "error"
+    except Exception as e:
+        ai_status = f"error: {str(e)}"
+        
+    return {
+        "status": "healthy" if db_status == "connected" and "error" not in ai_status else "degraded",
+        "components": {
+            "database": db_status,
+            "ai_engine": ai_status,
+            "telecom": "initialized" if settings.AT_API_KEY else "missing_key"
+        },
+        "timestamp": __import__("datetime").datetime.utcnow().isoformat(),
+        "service": settings.APP_NAME,
+        "version": settings.APP_VERSION
+    }
 
 
 # USSD logic moved to backend/ussd/router.py
