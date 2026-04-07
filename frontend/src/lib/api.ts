@@ -201,3 +201,19 @@ export const dashboardApi = {
 
   getHistory: (days = 7) => apiFetch<DashboardStats[]>(`/dashboard/history?days=${days}`),
 };
+
+// ── System ────────────────────────────────────────────────────────────────────
+
+export const systemApi = {
+  getHealth: () => apiFetch<{
+    status: string;
+    components: {
+      database: string;
+      ai_engine: string;
+      telecom: string;
+    };
+    timestamp: string;
+    service: string;
+    version: string;
+  }>("/health"),
+};

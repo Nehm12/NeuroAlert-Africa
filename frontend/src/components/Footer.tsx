@@ -31,9 +31,9 @@ export default function Footer() {
         <div>
           <h4 className="font-bold mb-6 text-sm text-white">{t.footer.resources}</h4>
           <ul className="space-y-4">
-            <li><Link href="/product" className="hover:text-white transition-colors text-xs font-light">SMS & USSD</Link></li>
-            <li><Link href="/product" className="hover:text-white transition-colors text-xs font-light">FAST AI</Link></li>
-            <li><Link href="/institutions" className="hover:text-white transition-colors text-xs font-light">Dashboards</Link></li>
+            <li><Link href="/status" className="hover:text-[#1AEEAF] transition-colors text-xs font-light">Statut du Système</Link></li>
+            <li><Link href="/developers" className="hover:text-white transition-colors text-xs font-light">Documentation API</Link></li>
+            <li><Link href="/faq" className="hover:text-white transition-colors text-xs font-light">FAQ & Support</Link></li>
           </ul>
         </div>
         <div>
