@@ -3,236 +3,138 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/context/LanguageContext";
-import { useTheme } from "@/context/ThemeContext";
-import { Menu, X, ArrowRight, Moon, Sun } from "lucide-react";
 
 export const Logo = ({ className = "w-8 h-8" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 72 72" fill="none">
-    <circle cx="36" cy="36" r="34" fill="currentColor" opacity="0.15" />
-    <circle cx="36" cy="36" r="34" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-    <path
-      d="M14 36 Q20 24 26 36 Q32 48 38 36 Q44 24 50 36 Q56 48 58 36"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      fill="none"
-      strokeLinecap="round"
-    />
-    <circle cx="36" cy="20" r="5" fill="#F5A623" />
-    <path d="M36 25 L36 47" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M29 36 L43 36" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="36" cy="36" r="34" fill="currentColor"/>
+    <path d="M14 36 Q20 24 26 36 Q32 48 38 36 Q44 24 50 36 Q56 48 58 36" stroke="#9FE1CB" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    <circle cx="36" cy="20" r="5" fill="#EF9F27"/>
+    <path d="M36 25 L36 47" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M29 36 L43 36" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
 
-const navLinks = (t: any) => [
-  { href: "/product",      label: t.nav.features },
-  { href: "/pricing",      label: t.nav.pricing },
-  { href: "/institutions", label: t.nav.institutions },
-  { href: "/developers",   label: t.nav.developers },
-  { href: "/about",        label: t.nav.about },
-  { href: "/faq",          label: "FAQ" },
-];
-
-/* ── Theme Toggle Button ── */
-function ThemeToggle() {
-  const { isDark, toggleTheme } = useTheme();
-
-  return (
-    <button
-      onClick={toggleTheme}
-      className="theme-toggle"
-      aria-label={isDark ? "Activer le thème clair" : "Activer le thème sombre"}
-      title={isDark ? "Thème clair" : "Thème sombre"}
-    >
-      <span className="theme-toggle-knob">
-        {isDark ? (
-          <Moon size={11} style={{ color: '#042E22' }} strokeWidth={2.5} />
-        ) : (
-          <Sun size={11} style={{ color: '#F5F4EF' }} strokeWidth={2.5} />
-        )}
-      </span>
-    </button>
-  );
-}
-
 export default function Navbar() {
-  const [scrolled, setScrolled]       = useState(false);
-  const [bannerVisible, setBanner]    = useState(true);
-  const [menuOpen, setMenuOpen]       = useState(false);
-  const pathname                       = usePathname();
-  const { t }                          = useTranslation();
-  const { isDark }                     = useTheme();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const { t, language, setLanguage } = useTranslation();
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 10);
-      if (window.scrollY > 60) setBanner(false);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 44);
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const linkBase = isDark
-    ? "text-white/60 hover:text-white"
-    : "text-[#2D5245]/70 hover:text-[#0D7A5F]";
-  const linkActive = "text-[#5DD6A8]";
-  const linkDarkActive = isDark ? linkActive : "text-[#0D7A5F] font-semibold";
+  // Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
+  const isDashboard = pathname?.startsWith("/dashboard");
+  if (isDashboard) return null;
+
+  const isHomepage = pathname === "/";
+  const navWhiteActive = isScrolled || !isHomepage;
 
   return (
     <>
-      {/* ── Top Banner ── */}
-      <div
-        style={{
-          maxHeight: bannerVisible ? '48px' : '0',
-          opacity: bannerVisible ? 1 : 0,
-          overflow: 'hidden',
-          transition: 'max-height 0.5s ease, opacity 0.5s ease',
-          background: 'linear-gradient(90deg, #042E22, #0D7A5F, #042E22)',
-          backgroundSize: '200% 100%',
-          animation: 'gradient-shift 6s ease infinite',
-          position: 'relative',
-          zIndex: 50,
-        }}
-      >
-        <div className="flex items-center justify-center gap-4 py-3 px-6 text-xs">
-          <span className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#5DD6A8] animate-pulse" />
-            <span className="font-bold text-white">Notre USSD IA est maintenant actif en Afrique.</span>
-            <span className="text-white/50 hidden md:inline">Dépistage automatisé en langues locales.</span>
-          </span>
-          <Link
-            href="/product"
-            className="flex items-center gap-1 text-[#5DD6A8] font-bold hover:text-white transition-colors border border-[#5DD6A8]/30 px-3 py-0.5 rounded-full hover:bg-[#5DD6A8]/10 whitespace-nowrap"
-          >
-            Commencer <ArrowRight size={10} />
+      {/* Top Banner - Only on Homepage */}
+      {isHomepage && (
+        <div className="bg-[#04342C] text-white py-3 px-6 flex justify-center items-center gap-6 text-sm relative z-[60]">
+          <div>
+            <span className="font-bold text-[11px] sm:text-sm">AI through USSD is now live across the world.</span>
+            <span className="ml-2 font-light hidden lg:inline">Automated stroke diagnostics in local languages.</span>
+          </div>
+          <Link href="/product" className="border border-white/40 px-4 py-1 rounded-full hover:bg-white/10 transition-colors text-[10px] whitespace-nowrap tracking-widest font-bold">
+            {t.nav.features}
           </Link>
         </div>
-      </div>
+      )}
 
-      {/* ── Main Navbar ── */}
-      <nav
-        className={scrolled ? 'navbar-scrolled' : ''}
-        style={{
-          position: 'fixed',
-          top: bannerVisible ? 48 : 0,
-          left: 0,
-          right: 0,
-          zIndex: 40,
-          transition: 'top 0.5s ease, background 0.4s ease, border-color 0.4s ease',
-          background: scrolled ? undefined : 'transparent',
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-            <div
-              className="transition-transform duration-300 group-hover:scale-110"
-              style={{ color: 'var(--primary-light)' }}
-            >
-              <Logo className="w-8 h-8" />
+      {/* Navigation */}
+      <nav className={`fixed w-full z-50 transition-all duration-500 ${navWhiteActive ? 'top-0 bg-white/95 backdrop-blur-md shadow-lg text-[#1a1a18] py-4' : (isHomepage ? 'top-[44px]' : 'top-0') + ' bg-transparent text-white py-6'}`}>
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className={`transition-all duration-500 transform group-hover:rotate-12 ${navWhiteActive ? 'text-[#04342C]' : 'text-[#085041]'}`}>
+              <Logo className={`w-8 h-8 ${navWhiteActive ? 'text-[#085041]' : 'text-[#04342C] bg-white rounded-full p-0.5'}`} />
             </div>
-            <span
-              className="font-black text-lg tracking-tight"
-              style={{ color: 'var(--text-primary)' }}
-            >
-              Neuro<span style={{ color: 'var(--primary-light)' }}>Alert</span>{" "}
-              <span style={{ color: 'var(--text-muted)', fontWeight: 300 }}>Africa</span>
-            </span>
+            <span className="font-bold text-xl tracking-tighter">NeuroAlert <span className="font-light opacity-70">Africa</span></span>
           </Link>
-
-          {/* Desktop links */}
-          <div className="hidden lg:flex items-center gap-1">
-            {navLinks(t).map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  pathname === link.href ? linkDarkActive : linkBase
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          
+          {/* Desktop Links */}
+          <div className="hidden lg:flex flex-1 justify-center items-center gap-8 text-[13px] font-medium">
+            <Link href="/product" className={`transition-colors ${navWhiteActive ? 'text-gray-500 hover:text-[#1D9E75]' : 'text-white/70 hover:text-white'}`}>{t.nav.features}</Link>
+            <Link href="/pricing" className={`transition-colors ${navWhiteActive ? 'text-gray-500 hover:text-[#1D9E75]' : 'text-white/70 hover:text-white'}`}>{t.nav.pricing}</Link>
+            <Link href="/institutions" className={`transition-colors ${navWhiteActive ? 'text-gray-500 hover:text-[#1D9E75]' : 'text-white/70 hover:text-white'}`}>{t.nav.institutions}</Link>
+            <Link href="/developers" className={`transition-colors ${navWhiteActive ? 'text-gray-500 hover:text-[#1D9E75]' : 'text-white/70 hover:text-white'}`}>{t.nav.developers}</Link>
+            <Link href="/about" className={`transition-colors ${navWhiteActive ? 'text-gray-500 hover:text-[#1D9E75]' : 'text-white/70 hover:text-white'}`}>{t.nav.about}</Link>
+            <Link href="/faq" className={`transition-colors ${navWhiteActive ? 'text-gray-500 hover:text-[#1D9E75]' : 'text-white/70 hover:text-white'}`}>FAQ</Link>
           </div>
 
-          {/* Right — theme toggle + CTA */}
-          <div className="hidden lg:flex items-center gap-3">
-            {/* Theme toggle */}
-            <ThemeToggle />
+          <div className="flex items-center gap-4 sm:gap-6">
+            {/* Desktop Language Toggle */}
+            <div className={`hidden lg:flex items-center gap-2 text-[10px] font-black tracking-[0.2em] transition-colors ${navWhiteActive ? 'text-[#085041]' : 'text-white'}`}>
+              <span 
+                className={`cursor-pointer hover:text-[#1D9E75] transition-colors ${language === 'fr' ? 'opacity-100' : 'opacity-40'}`}
+                onClick={() => setLanguage('fr')}
+              >FR</span>
+              <span className="opacity-20">|</span>
+              <span 
+                className={`cursor-pointer hover:text-[#1D9E75] transition-colors ${language === 'en' ? 'opacity-100' : 'opacity-40'}`}
+                onClick={() => setLanguage('en')}
+              >EN</span>
+            </div>
 
-            <Link
-              href="/login"
-              className="text-sm font-semibold px-4 py-2 transition-colors"
-              style={{ color: 'var(--text-muted)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary-light)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
-            >
+            <Link href="/login" className={`hidden sm:block px-8 py-2.5 rounded-full font-bold text-xs shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-0.5 ${navWhiteActive ? 'bg-[#085041] text-white' : 'bg-white text-[#085041]'}`}>
               {t.nav.login}
             </Link>
-            <Link
-              href="/product"
-              className="btn-primary text-sm py-2.5 px-5 gap-2"
-              style={{ fontSize: '0.8rem' }}
-            >
-              Essai gratuit <ArrowRight size={13} />
-            </Link>
-          </div>
 
-          {/* Mobile: theme toggle + burger */}
-          <div className="lg:hidden flex items-center gap-3">
-            <ThemeToggle />
-            <button
-              className="transition-colors p-2"
-              style={{ color: 'var(--text-muted)' }}
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Menu"
+            {/* Mobile Menu Button */}
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`lg:hidden p-2 rounded-xl transition-colors ${navWhiteActive ? 'text-[#085041] hover:bg-gray-100' : 'text-white hover:bg-white/10'}`}
             >
-              {menuOpen ? <X size={22} /> : <Menu size={22} />}
+              <div className="w-6 h-5 relative flex flex-col justify-between">
+                <span className={`w-full h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+                <span className={`w-full h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`w-full h-0.5 bg-current transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`}></span>
+              </div>
             </button>
           </div>
         </div>
+      </nav>
 
-        {/* Mobile drawer */}
-        <div
-          style={{
-            maxHeight: menuOpen ? '420px' : '0',
-            overflow: 'hidden',
-            transition: 'max-height 0.35s ease',
-            background: 'var(--navbar-bg)',
-            backdropFilter: 'blur(20px)',
-            borderTop: '1px solid var(--border-subtle)',
-          }}
-        >
-          <div className="px-6 py-4 space-y-1">
-            {navLinks(t).map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="block px-4 py-3 rounded-xl text-sm font-medium transition-all"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div
-              className="pt-4 flex flex-col gap-3"
-              style={{ borderTop: '1px solid var(--border-subtle)' }}
-            >
-              <Link
-                href="/login"
-                className="text-center text-sm py-2"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                {t.nav.login}
-              </Link>
-              <Link href="/product" className="btn-primary text-center text-sm py-3 justify-center">
-                Essai gratuit
-              </Link>
+      {/* Mobile Menu Overlay */}
+      <div className={`fixed inset-0 z-40 lg:hidden transition-all duration-500 ${isMenuOpen ? 'visible' : 'invisible pointer-events-none'}`}>
+        <div className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setIsMenuOpen(false)}></div>
+        
+        <div className={`absolute right-0 top-0 h-full w-[80%] max-w-[400px] bg-white shadow-2xl transition-transform duration-500 transform ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col pt-32 p-10`}>
+          <div className="flex flex-col gap-8 text-lg font-serif">
+            <Link href="/product" className="text-[#085041] hover:text-[#1D9E75] transition-colors">{t.nav.features}</Link>
+            <Link href="/pricing" className="text-[#085041] hover:text-[#1D9E75] transition-colors">{t.nav.pricing}</Link>
+            <Link href="/institutions" className="text-[#085041] hover:text-[#1D9E75] transition-colors">{t.nav.institutions}</Link>
+            <Link href="/developers" className="text-[#085041] hover:text-[#1D9E75] transition-colors">{t.nav.developers}</Link>
+            <Link href="/about" className="text-[#085041] hover:text-[#1D9E75] transition-colors">{t.nav.about}</Link>
+            <Link href="/faq" className="text-[#085041] hover:text-[#1D9E75] transition-colors">FAQ</Link>
+          </div>
+
+          <div className="mt-auto pt-10 border-t border-gray-100">
+            <div className="flex items-center gap-6 mb-8 text-sm font-black tracking-widest text-[#085041]">
+              <span onClick={() => { setLanguage('fr'); setIsMenuOpen(false); }} className={language === 'fr' ? 'text-[#1D9E75]' : 'opacity-40'}>FRANÇAIS</span>
+              <span className="opacity-10">|</span>
+              <span onClick={() => { setLanguage('en'); setIsMenuOpen(false); }} className={language === 'en' ? 'text-[#1D9E75]' : 'opacity-40'}>ENGLISH</span>
             </div>
+            
+            <Link href="/login" className="w-full bg-[#085041] text-white py-4 rounded-2xl font-bold flex items-center justify-center shadow-lg active:scale-95 transition-all">
+              {t.nav.login}
+            </Link>
           </div>
         </div>
-      </nav>
+      </div>
     </>
   );
 }

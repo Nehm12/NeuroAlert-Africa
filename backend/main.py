@@ -1,49 +1,79 @@
+"""
+NeuroAlert Africa — Main FastAPI Application
+Entry point. Registers all routers and middleware.
+"""
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="NeuroAlert Africa API")
+from backend.config import settings
+from backend.auth.router import router as auth_router
+from backend.dashboard.router import router as dashboard_router
+from backend.ussd.router import router as ussd_router
 
-# Configure CORS
+# ── App Init ─────────────────────────────────────────────────────────────────
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    description="""
+## NeuroAlert Africa API
+
+Backend API for the NeuroAlert Africa platform — USSD-native stroke triage system powered by Google Gemini.
+
+### Auth
+- `POST /auth/login` — Get JWT token
+- `GET /auth/me` — Current user profile
+
+### Dashboard (JWT required)
+- `GET /dashboard/stats` — Today's summary
+- `GET /dashboard/alerts` — Paginated alerts
+- `PATCH /dashboard/alerts/{id}/acknowledge` — Acknowledge
+- `PATCH /dashboard/alerts/{id}/resolve` — Resolve
+- `GET /dashboard/triage-feed` — Live USSD sessions
+- `GET /dashboard/users` — Institution users (admin)
+
+### USSD
+- `POST /ussd` — Africa's Talking USSD callback
+    """,
+)
+
+# ── CORS ──────────────────────────────────────────────────────────────────────
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust in production
+    allow_origins=[settings.FRONTEND_URL, "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
+# ── Routers ───────────────────────────────────────────────────────────────────
+
+app.include_router(auth_router)
+app.include_router(dashboard_router)
+app.include_router(ussd_router)
+
+
+# ── Root & Health ─────────────────────────────────────────────────────────────
+
+@app.get("/", tags=["Health"])
 async def root():
-    return {"message": "Welcome to NeuroAlert Africa API", "status": "active"}
+    return {
+        "status": "operational",
+        "service": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "docs": "/docs",
+    }
 
-@app.post("/ussd")
-async def ussd_callback(request: Request):
-    """
-    Africa's Talking USSD Callback
-    Expects form-data: sessionId, serviceCode, phoneNumber, text
-    """
-    form_data = await request.form()
-    session_id = form_data.get("sessionId")
-    service_code = form_data.get("serviceCode")
-    phone_number = form_data.get("phoneNumber")
-    text = form_data.get("text", "")
 
-    # Placeholder logic for USSD flow
-    # Africa's Talking expects plain text response starting with CON (continue) or END (end)
-    if not text:
-        response = "CON Welcome to NeuroAlert Africa\n"
-        response += "1. Start FAST Test\n"
-        response += "2. Stroke Information\n"
-        response += "0. Exit"
-    elif text == "1":
-        response = "CON Q1: Does their face look uneven when they smile? (Yes/No)"
-    elif text == "1*1": # Simulating multi-step USSD
-        response = "CON Q2: Can they lift both arms? (Yes/No)"
-    else:
-        response = "END Thank you for using NeuroAlert Africa."
+@app.get("/health", tags=["Health"])
+async def health_check():
+    return {"status": "healthy", "timestamp": __import__("datetime").datetime.utcnow().isoformat()}
 
-    return Response(content=response, media_type="text/plain")
+
+# USSD logic moved to backend/ussd/router.py

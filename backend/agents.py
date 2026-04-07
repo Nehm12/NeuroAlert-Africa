@@ -1,81 +1,85 @@
-import os
-import google.generativeai as genai
-from dotenv import load_dotenv
+"""
+Pont vers le moteur IA NeuroAlert (`modelIA/`) — une seule source de vérité.
+Le package `modelIA` est à la racine du dépôt (dossier parent de `backend/`).
+"""
 
-load_dotenv()
+from __future__ import annotations
 
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parents[1]  # NeuroAlert-Africa/
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+import africastalking
+from backend.config import settings
+from modelIA.main import (  # noqa: E402
+    FASTInput,
+    NeuroAlertModel,
+    alert_decision_for_fast_count,
+    first_aid_text,
+)
+
+# Initialize Africa's Talking
+if settings.AT_API_KEY:
+    try:
+        africastalking.initialize(settings.AT_USERNAME, settings.AT_API_KEY)
+        at_sms = africastalking.SMS
+    except Exception as e:
+        print(f"AT Init Error: {e}")
+        at_sms = None
+else:
+    at_sms = None
+
 
 class NeuroAlertAgents:
-    """
-    NeuroAlert Africa AI Agents
-    Using Google Generative AI (Gemini) for symptom analysis and alerting.
-    """
+    """Compatibilité avec l’ancienne API backend ; délègue à `NeuroAlertModel`."""
 
-    def __init__(self):
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+    def __init__(self) -> None:
+        self._model = NeuroAlertModel()
 
-    async def analyse_fast_symptoms(self, face: bool, arm: bool, speech: bool) -> dict:
-        """
-        Agent Analyse: Processes FAST symptoms and returns a risk assessment.
-        """
-        # Rule-based fallback + AI refinement
-        score = 0
-        if face: score += 1
-        if arm: score += 1
-        if speech: score += 1
+    async def analyse_fast_symptoms(
+        self,
+        face: bool,
+        arm: bool,
+        speech: bool,
+        balance: bool = False,
+        eyes: bool = False,
+        time_known: bool = False,
+        language_code: str = "fr",
+    ) -> dict:
+        inp = FASTInput(
+            balance_loss=balance,
+            vision_problem=eyes,
+            face_droop=face,
+            arm_weakness=arm,
+            speech_difficulty=speech,
+            time_symptoms_known=time_known,
+            language_code=language_code,
+        )
+        result = await self._model.analyze(inp)
+        return result.model_dump()
 
-        prompt = f"""
-        Analyze the following stroke symptoms (FAST test):
-        - Facial drooping: {'Yes' if face else 'No'}
-        - Arm weakness: {'Yes' if arm else 'No'}
-        - Speech difficulty: {'Yes' if speech else 'No'}
-        
-        Current FAST Score: {score}/3.
-        
-        Provide a JSON response with:
-        - risk_score: (float between 0.0 and 1.0)
-        - urgency_level: (low, medium, high)
-        - recommendation: (short text)
-        """
-
-        try:
-            # For MVP, we can combine rule-based and AI or just use AI for complex cases
-            # Here we simulate the AI response logic
-            risk_score = score / 3.0
-            urgency = "high" if score >= 2 else "medium" if score == 1 else "low"
-            
-            return {
-                "risk_score": risk_score,
-                "urgency_level": urgency,
-                "recommendation": "Call emergency services immediately." if score >= 1 else "Monitor symptoms and consult a doctor."
-            }
-        except Exception as e:
-            return {"error": str(e), "risk_score": score/3.0, "urgency_level": "unknown"}
-
-    async def decide_alert(self, analysis: dict) -> str:
-        """
-        Agent Alerte: Decides the next action based on analysis.
-        """
-        if analysis.get("urgency_level") == "high":
-            return "alert_level2"  # Emergency + Family
-        elif analysis.get("urgency_level") == "medium":
-            return "alert_level1"  # Family only
-        else:
-            return "low_risk"
+    def decide_alert(self, analysis: dict) -> str:
+        """Retourne low_risk | alert_level1 | alert_level2 (champ ai_decision)."""
+        return alert_decision_for_fast_count(int(analysis.get("fast_positive_count", 0)))
 
     def get_first_aid_instructions(self, language_code: str = "fr") -> str:
-        """
-        Provides first aid instructions in the requested language.
-        """
-        # Placeholder for multilingual instructions
-        instructions = {
-            "fr": "1. Gardez la personne calme. 2. Ne rien donner à manger ou à boire. 3. Notez l'heure du début des signes.",
-            "en": "1. Keep the person calm. 2. Do not give food or drink. 3. Note the time symptoms started.",
-            "ha": "1. Kwantar wa mutum da hankali. 2. Kada ka ba shi abinci ko abin sha. 3. Rubuta lokacin da alamun suka fara."
-        }
-        return instructions.get(language_code, instructions["fr"])
+        return first_aid_text(language_code)
 
-# Singleton instance
+    async def send_emergency_sms(self, to: list[str], message: str):
+        """Envoie un SMS d'urgence via Africa's Talking."""
+        if not at_sms:
+            print(f"MOCK SMS to {to}: {message}")
+            return {"status": "mocked"}
+        
+        try:
+            response = at_sms.send(message, to)
+            return response
+        except Exception as e:
+            print(f"AT SMS Error: {e}")
+            return {"status": "error", "message": str(e)}
+
+
 agents = NeuroAlertAgents()

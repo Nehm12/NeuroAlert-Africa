@@ -1,17 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"; // build-refresh-v2
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 import { LanguageProvider } from "@/context/LanguageContext";
-import { ThemeProvider } from "@/context/ThemeContext";
+import { AuthProvider } from "@/context/AuthContext";
 
-const dmSans = DM_Sans({
+export const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
 });
 
-const dmSerif = DM_Serif_Display({
+export const dmSerif = DM_Serif_Display({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-dm-serif",
@@ -28,33 +29,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" suppressHydrationWarning>
-      <head>
-        {/* Prevent flash of wrong theme — runs before React hydrates */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var saved = localStorage.getItem('neuroalert-theme');
-                  var system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                  var theme = saved || system;
-                  document.documentElement.setAttribute('data-theme', theme);
-                } catch(e) {
-                  document.documentElement.setAttribute('data-theme', 'dark');
-                }
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body className={`${dmSans.variable} ${dmSerif.variable} font-sans antialiased`}>
+    <html lang="fr">
+      <body className={`${dmSans.variable} ${dmSerif.variable} font-sans antialiased text-[#1a1a18]`}>
         <LanguageProvider>
-          <ThemeProvider>
+          <AuthProvider>
             <Navbar />
             {children}
             <Footer />
-          </ThemeProvider>
+            <Chatbot />
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>
