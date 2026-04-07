@@ -3,7 +3,7 @@
  * All calls to the FastAPI backend are centralized here.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/_/backend";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://backendnaaf-nehms-projects.vercel.app";
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
