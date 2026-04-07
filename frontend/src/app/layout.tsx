@@ -21,6 +21,10 @@ export const dmSerif = DM_Serif_Display({
 export const metadata: Metadata = {
   title: "NeuroAlert Africa — USSD Stroke Triage",
   description: "AI-powered, USSD-based early stroke detection system for Africa.",
+  icons: {
+    icon: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
