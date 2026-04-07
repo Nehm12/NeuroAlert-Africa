@@ -227,7 +227,32 @@ const dictionary_fr = {
     "contact": "Contact",
     "careers": "Carrières",
     "terms": "Conditions d'utilisation",
-    "privacy": "Confidentialité"
+    "privacy": "Confidentialité",
+    "statut": "Statut du Système",
+    "docs": "Documentation API"
+  },
+  "status": {
+    "title": "État du Système",
+    "desc": "Surveillance en temps réel des infrastructures critiques de NeuroAlert Africa.",
+    "ia_engine": "Moteur IA Gemini",
+    "ia_desc": "Gemini 1.5 Flash - Analyse de suspicion d'AVC",
+    "database": "Infrastructure Supabase",
+    "database_desc": "Stockage des sessions et alertes cliniques",
+    "telecom": "Passerelle USSD",
+    "telecom_desc": "Africa's Talking - Réseau mobile panafricain",
+    "global": "Status Global",
+    "operational": "Opérationnel",
+    "maintenance": "Maintenance Partielle",
+    "last_check": "Dernière vérification",
+    "version": "Version API",
+    "back": "Retour Accueil"
+  },
+  "errors": {
+    "network": "Liaison interrompue : Impossible de contacter le serveur NeuroAlert. Le service est peut-être temporairement hors-ligne ou votre connexion internet est instable.",
+    "auth": "Identifiants invalides : L'email ou le mot de passe est incorrect. Veuillez vérifier vos accès institutionnels.",
+    "access": "Accès refusé : Vous ne disposez pas des privilèges nécessaires pour accéder à cette console de commande.",
+    "server": "Erreur interne critique : Une défaillance est survenue sur le serveur NeuroAlert. Nos ingénieurs ont été alertés.",
+    "unknown": "Erreur système inconnue : Une anomalie imprévue a été détectée lors du traitement de la requête."
   },
   "ussd_flow": {
     "step1": "Accès USSD",
@@ -580,7 +605,32 @@ const dictionary_en = {
     "contact": "Contact",
     "careers": "Careers",
     "terms": "Terms of Use",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "statut": "System Status",
+    "docs": "API Documentation"
+  },
+  "status": {
+    "title": "System Status",
+    "desc": "Real-time monitoring of NeuroAlert Africa's critical infrastructure.",
+    "ia_engine": "Gemini IA Engine",
+    "ia_desc": "Gemini 1.5 Flash - Stroke suspicion analysis",
+    "database": "Supabase Infrastructure",
+    "database_desc": "Storage for sessions and clinical alerts",
+    "telecom": "USSD Gateway",
+    "telecom_desc": "Africa's Talking - Pan-African mobile network",
+    "global": "Global Status",
+    "operational": "Operational",
+    "maintenance": "Partial Maintenance",
+    "last_check": "Last check",
+    "version": "API Version",
+    "back": "Back to Home"
+  },
+  "errors": {
+    "network": "Connection lost: Unable to reach the NeuroAlert server. The service might be offline or your connection is unstable.",
+    "auth": "Invalid credentials: The email or password provided is incorrect. Please verify your institutional access.",
+    "access": "Access denied: You do not have the required privileges to access this neurological command center.",
+    "server": "Critical server error: An internal failure occurred on the NeuroAlert server. Our engineering team has been notified.",
+    "unknown": "Unknown system error: An unexpected anomaly was detected while processing your request."
   },
   "ussd_flow": {
     "step1": "USSD Access",

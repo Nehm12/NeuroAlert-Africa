@@ -25,8 +25,9 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(email, password);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Erreur de connexion.");
+    } catch (err: any) {
+      const errorKey = err.message as keyof typeof t.errors;
+      setError(t.errors[errorKey] || t.errors.unknown);
     } finally {
       setSubmitting(false);
     }
@@ -93,9 +94,15 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="bg-[#E24B4A]/10 border border-[#E24B4A]/30 rounded-xl px-5 py-3 text-[#E24B4A] text-sm flex items-start gap-3">
-                <span className="w-2 h-2 rounded-full bg-[#E24B4A] mt-1.5 shrink-0 animate-pulse" />
-                {error}
+              <div className="bg-[#E24B4A]/10 border border-[#E24B4A]/30 rounded-2xl p-5 text-[#E24B4A] text-xs flex items-start gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="relative shrink-0 mt-0.5">
+                  <span className="absolute inset-0 bg-[#E24B4A] rounded-full animate-ping opacity-25" />
+                  <span className="relative block w-2 h-2 rounded-full bg-[#E24B4A]" />
+                </div>
+                <div className="flex-1 leading-relaxed">
+                  <span className="font-black uppercase tracking-widest text-[9px] block mb-1">Alerte Système</span>
+                  {error}
+                </div>
               </div>
             )}
 

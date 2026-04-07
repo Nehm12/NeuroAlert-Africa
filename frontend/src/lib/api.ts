@@ -3,7 +3,7 @@
  * All calls to the FastAPI backend are centralized here.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/_/backend";
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -23,14 +23,26 @@ async function apiFetch<T>(
     ...(options.headers || {}),
   };
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  try {
+    const res = await fetch(`${API_URL}${path}`, { ...options, headers });
 
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(error.detail || "API error");
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: res.statusText }));
+        // Map status to translation keys
+        if (res.status === 401) throw new Error("auth");
+        if (res.status === 403) throw new Error("access");
+        if (res.status === 500) throw new Error("server");
+        
+        throw new Error(error.detail || "unknown");
+    }
+
+    return res.json();
+  } catch (err: any) {
+    if (err.message === "Failed to fetch") {
+        throw new Error("network");
+    }
+    throw err;
   }
-
-  return res.json();
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────

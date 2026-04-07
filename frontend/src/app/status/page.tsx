@@ -2,9 +2,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { systemApi } from "@/lib/api";
+import { useTranslation } from "@/context/LanguageContext";
 import { Activity, Database, Zap, ArrowLeft, RefreshCw, Cpu, Globe } from "lucide-react";
 
 export default function StatusPage() {
+  const { t } = useTranslation();
   const [health, setHealth] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [lastCheck, setLastCheck] = useState<Date>(new Date());
@@ -49,7 +51,7 @@ export default function StatusPage() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-20">
         <Link href="/" className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors mb-12 group">
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Retour Accueil</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.3em]">{t.status.back}</span>
         </Link>
 
         <div className="flex items-end justify-between mb-16">
@@ -58,10 +60,10 @@ export default function StatusPage() {
               <div className="w-10 h-10 rounded-2xl bg-[#1D9E75]/20 flex items-center justify-center border border-[#1D9E75]/30">
                 <Activity className="text-[#1AEEAF]" size={20} />
               </div>
-              <h1 className="text-4xl font-bold tracking-tighter">État du Système</h1>
+              <h1 className="text-4xl font-bold tracking-tighter">{t.status.title}</h1>
             </div>
             <p className="text-white/40 text-lg max-w-xl">
-              Surveillance en temps réel des infrastructures critiques de <span className="text-white font-medium">NeuroAlert Africa</span>.
+              {t.status.desc}
             </p>
           </div>
           <button 
@@ -76,27 +78,27 @@ export default function StatusPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
           <ComponentCard 
             icon={Cpu} 
-            title="Moteur IA Gemini" 
+            title={t.status.ia_engine} 
             status={health?.components.ai_engine || "unknown"} 
             color={getStatusColor(health?.components.ai_engine)} 
             bg={getStatusBg(health?.components.ai_engine)}
-            desc="Gemini 1.5 Flash - Analyse de suspicion d'AVC"
+            desc={t.status.ia_desc}
           />
           <ComponentCard 
             icon={Database} 
-            title="Infrastructure Supabase" 
+            title={t.status.database} 
             status={health?.components.database || "unknown"} 
             color={getStatusColor(health?.components.database)} 
             bg={getStatusBg(health?.components.database)}
-            desc="Stockage des sessions et alertes cliniques"
+            desc={t.status.database_desc}
           />
           <ComponentCard 
             icon={Globe} 
-            title="Passerelle USSD" 
+            title={t.status.telecom} 
             status={health?.components.telecom || "unknown"} 
             color={getStatusColor(health?.components.telecom)} 
             bg={getStatusBg(health?.components.telecom)}
-            desc="Africa's Talking - Réseau mobile panafricain"
+            desc={t.status.telecom_desc}
           />
         </div>
 
@@ -108,9 +110,9 @@ export default function StatusPage() {
                 <div className={`w-4 h-4 rounded-full ${health?.status === "healthy" ? "bg-[#1AEEAF]" : "bg-[#EF9F27]"} relative`} />
               </div>
               <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">Status Global</div>
+                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">{t.status.global}</div>
                 <div className="text-2xl font-bold">
-                  {health?.status === "healthy" ? "Opérationnel" : loading ? "Vérification..." : "Maintenance Partielle"}
+                  {health?.status === "healthy" ? t.status.operational : loading ? "..." : t.status.maintenance}
                 </div>
               </div>
             </div>
@@ -118,7 +120,7 @@ export default function StatusPage() {
             <div className="h-10 w-px bg-white/10 hidden md:block" />
 
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">Dernière vérification</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">{t.status.last_check}</div>
               <div className="text-xl font-mono text-white/60">
                 {lastCheck.toLocaleTimeString()}
               </div>
@@ -127,7 +129,7 @@ export default function StatusPage() {
             <div className="h-10 w-px bg-white/10 hidden md:block" />
 
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">Version API</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">{t.status.version}</div>
               <div className="text-xl font-mono text-[#1AEEAF]">
                 v{health?.version || "1.0.2"}
               </div>
