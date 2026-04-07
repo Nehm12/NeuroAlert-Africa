@@ -48,7 +48,7 @@
                                                     <card.icon size={32} />
                                                   </div>
                                                   <h3 className="text-2xl font-bold text-[#085041] mb-4 group-hover:text-[#1D9E75] transition-colors">{card.title}</h3>
-                                                  <p className="text-[#5F5E5A] font-light leading-relaxed">{card.card_desc || card.desc}</p>
+                                                  <p className="text-[#5F5E5A] font-light leading-relaxed">{card.desc}</p>
                                                 </div>
                                               ))}
                                             </div>
