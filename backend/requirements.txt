@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 africastalking
 supabase
 python-dotenv
@@ -7,3 +7,5 @@ google-generativeai
 pytest
 httpx
 python-multipart
+pydantic[email]
+pydantic-settings
