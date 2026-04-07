@@ -8,9 +8,15 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-_ROOT = Path(__file__).resolve().parents[1]  # NeuroAlert-Africa/
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
+# _CURRENT pointe vers le dossier contenant agents.py (backend/)
+# modelIA/ est un sous-dossier de backend/ pour le déploiement Vercel
+_CURRENT = Path(__file__).resolve().parent  # backend/
+_ROOT = _CURRENT.parent  # repo root (fonctionne en local)
+
+# Ajoute les deux pour couvrir local ET Vercel
+for _p in [str(_ROOT), str(_CURRENT)]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 import africastalking
 from backend.config import settings

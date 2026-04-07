@@ -4,15 +4,19 @@ Entry point. Registers all routers and middleware.
 """
 import sys
 import os
+import types
 
 # --- Vercel Path Fix ---
-# Because Vercel mounts the backend folder as the root for this service,
-# we need to add the parent directory to sys.path so that absolute imports
-# like `from backend.config import settings` work properly.
+# Sur Vercel, le contenu de backend/ est déployé directement dans /var/task/
+# (sans sous-dossier backend/). Python ne peut donc pas trouver le package 'backend'.
+# On crée un module virtuel 'backend' qui pointe vers le dossier courant,
+# ce qui permet à `from backend.config import settings` de résoudre ./config.py
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+if 'backend' not in sys.modules:
+    _pkg = types.ModuleType('backend')
+    _pkg.__path__ = [current_dir]
+    _pkg.__package__ = 'backend'
+    sys.modules['backend'] = _pkg
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
