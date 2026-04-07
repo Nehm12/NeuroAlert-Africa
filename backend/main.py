@@ -2,6 +2,18 @@
 NeuroAlert Africa — Main FastAPI Application
 Entry point. Registers all routers and middleware.
 """
+import sys
+import os
+
+# --- Vercel Path Fix ---
+# Because Vercel mounts the backend folder as the root for this service,
+# we need to add the parent directory to sys.path so that absolute imports
+# like `from backend.config import settings` work properly.
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
