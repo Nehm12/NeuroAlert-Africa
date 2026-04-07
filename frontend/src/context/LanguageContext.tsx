@@ -341,7 +341,17 @@ const dictionary_fr = {
     "user_mgmt": "Gestion des Utilisateurs",
     "filter_active": "active",
     "filter_ack": "acknowledged",
-    "filter_resolved": "resolved"
+    "filter_resolved": "resolved",
+    "status_critical": "Critique",
+    "status_stable": "Stable",
+    "status_pending": "En attente",
+    "title": "CENTRE DE COMMANDE NEUROLOGIQUE",
+    "master_node": "NŒUD MAÎTRE OPÉRATIONNEL",
+    "queue": "File d'Attente de Triage",
+    "triage_feed_desc": "FLUX GSM EN TEMPS RÉEL",
+    "fast_score": "SCORE FAST",
+    "dispatch": "DISPATCHING EN COURS",
+    "eta": "ETA: < 8 MIN"
   }
 };
 
@@ -684,7 +694,17 @@ const dictionary_en = {
     "user_mgmt": "User Management",
     "filter_active": "active",
     "filter_ack": "acknowledged",
-    "filter_resolved": "resolved"
+    "filter_resolved": "resolved",
+    "status_critical": "Critical",
+    "status_stable": "Stable",
+    "status_pending": "Pending",
+    "title": "NEUROLOGICAL COMMAND CENTER",
+    "master_node": "OPERATIONAL MASTER NODE",
+    "queue": "Triage Queue",
+    "triage_feed_desc": "REAL-TIME GSM FEED",
+    "fast_score": "FAST SCORE",
+    "dispatch": "ACTIVE DISPATCH",
+    "eta": "ETA: < 8 MIN"
   }
 };
 
