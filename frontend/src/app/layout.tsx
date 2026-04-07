@@ -3,14 +3,15 @@ import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 import { LanguageProvider } from "@/context/LanguageContext";
 
-const dmSans = DM_Sans({
+export const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
 });
 
-const dmSerif = DM_Serif_Display({
+export const dmSerif = DM_Serif_Display({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-dm-serif",
@@ -33,6 +34,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
+          <Chatbot />
         </LanguageProvider>
       </body>
     </html>
