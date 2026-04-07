@@ -31,9 +31,13 @@ async function apiFetch<T>(
         // Map status to translation keys
         if (res.status === 401) throw new Error("auth");
         if (res.status === 403) throw new Error("access");
+        if (res.status === 404) throw new Error("not_found");
+        if (res.status === 405) throw new Error("method");
+        if (res.status === 422) throw new Error("validation");
+        if (res.status === 429) throw new Error("rate_limit");
         if (res.status === 500) throw new Error("server");
         
-        throw new Error(error.detail || "unknown");
+        throw new Error(error.detail || `Error ${res.status}: ${res.statusText}`);
     }
 
     return res.json();

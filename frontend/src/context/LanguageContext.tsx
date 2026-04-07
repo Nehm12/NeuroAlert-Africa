@@ -252,6 +252,10 @@ const dictionary_fr = {
     "auth": "Identifiants invalides : L'email ou le mot de passe est incorrect. Veuillez vérifier vos accès institutionnels.",
     "access": "Accès refusé : Vous ne disposez pas des privilèges nécessaires pour accéder à cette console de commande.",
     "server": "Erreur interne critique : Une défaillance est survenue sur le serveur NeuroAlert. Nos ingénieurs ont été alertés.",
+    "not_found": "Point d'accès introuvable : L'URL demandée n'existe pas sur le serveur (Erreur 404).",
+    "method": "Requête non autorisée : La méthode utilisée n'est pas supportée par ce point d'accès (Erreur 405).",
+    "validation": "Données non conformes : Les informations envoyées ne respectent pas le protocole attendu (Erreur 422).",
+    "rate_limit": "Protection active : Trop de requêtes détectées. Veuillez patienter avant de réessayer.",
     "unknown": "Erreur système inconnue : Une anomalie imprévue a été détectée lors du traitement de la requête."
   },
   "ussd_flow": {
@@ -630,6 +634,10 @@ const dictionary_en = {
     "auth": "Invalid credentials: The email or password provided is incorrect. Please verify your institutional access.",
     "access": "Access denied: You do not have the required privileges to access this neurological command center.",
     "server": "Critical server error: An internal failure occurred on the NeuroAlert server. Our engineering team has been notified.",
+    "not_found": "Endpoint not found: The requested URL does not exist on the server (Error 404).",
+    "method": "Method not allowed: The request method is not supported by this endpoint (Error 405).",
+    "validation": "Validation failed: The data provided does not match the expected protocol (Error 422).",
+    "rate_limit": "Rate limited: Too many requests detected. Please wait before trying again.",
     "unknown": "Unknown system error: An unexpected anomaly was detected while processing your request."
   },
   "ussd_flow": {
