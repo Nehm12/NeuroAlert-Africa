@@ -245,18 +245,6 @@ const dictionary_fr = {
     "step7": "Alerte Urgence",
     "step7_detail": "Envoi immédiat à l'hôpital"
   },
-  "dashboard": {
-    "title": "Système d'Alerte Hospitalier",
-    "queue": "File de Triage Active",
-    "fast_score": "SCORE F.A.S.T",
-    "dispatch": "DISPATCHING AMBULANCE",
-    "eta": "ARRIVÉE ESTIMÉE : 8 MIN",
-    "status_critical": "CRITIQUE",
-    "status_stable": "STABLE",
-    "status_pending": "EN ATTENTE",
-    "master_node": "Nœud Master : Lagos",
-    "triage_feed_desc": "Flux de Triage Live USSD"
-  },
   "impact": {
     "badge": "Échelle & Impact",
     "title": "Résultats concrets.",
@@ -306,6 +294,52 @@ const dictionary_fr = {
       "regional": "Régional (Une Province)",
       "national": "National (Tout le Pays)"
     }
+  },
+  "login": {
+    "badge": "Accès Institutionnel",
+    "title": "Connexion au Dashboard",
+    "subtitle": "Réservé aux agents hospitaliers et ministères partenaires.",
+    "email_label": "Email Professionnel",
+    "email_placeholder": "vous@institution.org",
+    "password_label": "Mot de Passe",
+    "submit": "Accéder au Dashboard",
+    "loading": "Connexion en cours...",
+    "no_access": "Vous n'avez pas encore accès ?",
+    "contact_team": "Contacter l'équipe"
+  },
+  "dashboard": {
+    "institution_label": "Institution",
+    "operational": "Système Opérationnel",
+    "refresh": "Actualiser",
+    "logout": "Déconnexion",
+    "nav_overview": "Vue d'ensemble",
+    "nav_alerts": "Alertes",
+    "nav_feed": "Triage Live",
+    "nav_users": "Utilisateurs",
+    "sessions_today": "Sessions Aujourd'hui",
+    "active_alerts": "Alertes Actives",
+    "alerts_l1": "Alertes Niveau 1",
+    "alerts_l1_sub": "Aujourd'hui",
+    "alerts_l2": "Alertes Niveau 2",
+    "alerts_l2_sub": "Urgent",
+    "recent_alerts": "Alertes Récentes",
+    "see_all": "Voir tout",
+    "no_alerts": "Aucune alerte active",
+    "live_feed": "Flux Triage Live",
+    "ussd_live": "USSD Live",
+    "no_sessions": "Aucune session en cours",
+    "avg_response": "Temps moy. réponse",
+    "pending_sessions": "Sessions en attente",
+    "false_positive": "Taux faux positifs",
+    "gsm_uptime": "Protocole GSM",
+    "auto_refresh": "Refresh auto / 30s",
+    "ack": "Ack",
+    "resolve": "Résoudre",
+    "location_unknown": "Location inconnue",
+    "user_mgmt": "Gestion des Utilisateurs",
+    "filter_active": "active",
+    "filter_ack": "acknowledged",
+    "filter_resolved": "resolved"
   }
 };
 
@@ -552,18 +586,6 @@ const dictionary_en = {
     "step7": "Emergency Alert",
     "step7_detail": "Immediate Hospital Dispatch"
   },
-  "dashboard": {
-    "title": "Hospital Alert System",
-    "queue": "Active Triage Queue",
-    "fast_score": "F.A.S.T SCORE",
-    "dispatch": "AMBULANCE DISPATCHING",
-    "eta": "ESTIMATED ARRIVAL: 8 MIN",
-    "status_critical": "CRITICAL",
-    "status_stable": "STABLE",
-    "status_pending": "PENDING",
-    "master_node": "Master Node: Lagos",
-    "triage_feed_desc": "Real-time USSD Triage Feed"
-  },
   "impact": {
     "badge": "Scale & Impact",
     "title": "Real-world results.",
@@ -613,6 +635,52 @@ const dictionary_en = {
       "regional": "Regional (One Province)",
       "national": "National (Full Country)"
     }
+  },
+  "login": {
+    "badge": "Institutional Access",
+    "title": "Clinical Dashboard",
+    "subtitle": "Reserved for hospital agents and partner ministries.",
+    "email_label": "Professional Email",
+    "email_placeholder": "you@institution.org",
+    "password_label": "Password",
+    "submit": "Access Dashboard",
+    "loading": "Signing in...",
+    "no_access": "Don't have access yet?",
+    "contact_team": "Contact the team"
+  },
+  "dashboard": {
+    "institution_label": "Institution",
+    "operational": "System Operational",
+    "refresh": "Refresh",
+    "logout": "Sign Out",
+    "nav_overview": "Overview",
+    "nav_alerts": "Alerts",
+    "nav_feed": "Live Triage",
+    "nav_users": "Users",
+    "sessions_today": "Today's Sessions",
+    "active_alerts": "Active Alerts",
+    "alerts_l1": "Level 1 Alerts",
+    "alerts_l1_sub": "Today",
+    "alerts_l2": "Level 2 Alerts",
+    "alerts_l2_sub": "Urgent",
+    "recent_alerts": "Recent Alerts",
+    "see_all": "See all",
+    "no_alerts": "No active alerts",
+    "live_feed": "Live Triage Feed",
+    "ussd_live": "USSD Live",
+    "no_sessions": "No active USSD sessions",
+    "avg_response": "Avg. Response Time",
+    "pending_sessions": "Pending Sessions",
+    "false_positive": "False Positive Rate",
+    "gsm_uptime": "GSM Protocol",
+    "auto_refresh": "Auto refresh / 30s",
+    "ack": "Ack",
+    "resolve": "Resolve",
+    "location_unknown": "Unknown location",
+    "user_mgmt": "User Management",
+    "filter_active": "active",
+    "filter_ack": "acknowledged",
+    "filter_resolved": "resolved"
   }
 };
 

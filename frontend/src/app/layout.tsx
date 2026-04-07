@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 export const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -31,10 +32,12 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${dmSans.variable} ${dmSerif.variable} font-sans antialiased text-[#1a1a18]`}>
         <LanguageProvider>
-          <Navbar />
-          {children}
-          <Footer />
-          <Chatbot />
+          <AuthProvider>
+            <Navbar />
+            {children}
+            <Footer />
+            <Chatbot />
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>
