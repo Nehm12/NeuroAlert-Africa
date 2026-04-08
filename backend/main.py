@@ -107,7 +107,7 @@ async def health_check():
     # 2. Test IA Model
     try:
         # Simple non-LLM check first
-        from modelIA.main import FASTInput
+        from backend.modelIA.main import FASTInput
         test_input = FASTInput(
             balance_loss=False, vision_problem=False, face_droop=False, 
             arm_weakness=False, speech_difficulty=False
