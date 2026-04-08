@@ -105,8 +105,8 @@ async def health_check():
     try:
         supabase.table("users").select("count", count="exact").limit(1).execute()
         db_status = "connected"
-    except Exception:
-        db_status = "error"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
 
     # 2. Test IA Model
     try:
