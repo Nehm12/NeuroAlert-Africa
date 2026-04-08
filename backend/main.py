@@ -103,7 +103,7 @@ async def health_check():
     
     # 1. Test Database
     try:
-        supabase.table("users").select("count", count="exact").limit(1).execute()
+        supabase.table("alerts").select("count", count="exact").limit(1).execute()
         db_status = "connected"
     except Exception as e:
         db_status = f"error: {str(e)}"

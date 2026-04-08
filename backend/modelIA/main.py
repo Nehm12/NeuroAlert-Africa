@@ -284,6 +284,8 @@ class NeuroAlertModel:
     ) -> None:
         self._gemini_api_key = (gemini_api_key or os.getenv("GEMINI_API_KEY") or "").strip() or None
         self._gemini_model = (gemini_model or os.getenv("GEMINI_MODEL") or "gemini-1.5-flash").strip()
+        if not self._gemini_model.startswith("models/"):
+            self._gemini_model = f"models/{self._gemini_model}"
 
     def _rules_only(self, inp: FASTInput) -> StrokeAnalysisResult:
         n, risk, urg, rec, rationale = _compute_rule_metrics(inp)
