@@ -29,6 +29,10 @@ from backend.auth.router import router as auth_router
 from backend.dashboard.router import router as dashboard_router
 from backend.ussd.router import router as ussd_router
 
+# ── API Prefix Wrapper ───────────────────────────────────────────────────────
+from fastapi import APIRouter
+api_router = APIRouter(prefix="/api")
+
 # ── App Init ─────────────────────────────────────────────────────────────────
 
 app = FastAPI(
@@ -75,14 +79,14 @@ app.add_middleware(
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 
-app.include_router(auth_router)
-app.include_router(dashboard_router)
-app.include_router(ussd_router)
+api_router.include_router(auth_router)
+api_router.include_router(dashboard_router)
+api_router.include_router(ussd_router)
 
 
 # ── Root & Health ─────────────────────────────────────────────────────────────
 
-@app.get("/", tags=["Health"])
+@api_router.get("/", tags=["Health"])
 async def root():
     return {
         "status": "operational",
@@ -92,7 +96,7 @@ async def root():
     }
 
 
-@app.get("/health", tags=["Health"])
+@api_router.get("/health", tags=["Health"])
 async def health_check():
     from backend.database import supabase
     from backend.agents import agents
@@ -130,6 +134,10 @@ async def health_check():
         "service": settings.APP_NAME,
         "version": settings.APP_VERSION
     }
+
+
+# Include the API router into the main app
+app.include_router(api_router)
 
 
 # USSD logic moved to backend/ussd/router.py
