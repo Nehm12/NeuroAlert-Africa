@@ -37,11 +37,19 @@ async def login(credentials: LoginRequest):
     Returns a JWT access_token along with the user's role and institution.
     """
     try:
-        # Sign in via Supabase Auth
-        auth_response = supabase.auth.sign_in_with_password({
-            "email": credentials.email,
-            "password": credentials.password,
-        })
+        try:
+            # Sign in via Supabase Auth
+            auth_response = supabase.auth.sign_in_with_password({
+                "email": credentials.email,
+                "password": credentials.password,
+            })
+        except Exception as auth_error:
+            if "Invalid login credentials" in str(auth_error):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Email ou mot de passe invalide.",
+                )
+            raise auth_error
 
         if not auth_response.user or not auth_response.session:
             raise HTTPException(
@@ -83,6 +91,8 @@ async def login(credentials: LoginRequest):
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Authentication service error: {str(e)}",

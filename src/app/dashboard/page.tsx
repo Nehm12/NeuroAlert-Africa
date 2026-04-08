@@ -9,8 +9,9 @@ import { Logo } from "@/components/Navbar";
 import {
   Activity, AlertTriangle, BellRing, BookOpen, CheckCircle, ChevronRight,
   Clock, Globe, HeartPulse, LayoutDashboard, LogOut, MapPin,
-  RefreshCw, Shield, Users, Zap, Building2, ListTree, TrendingUp, User
+  RefreshCw, Shield, Users, Zap, Building2, ListTree, TrendingUp, User, X
 } from "lucide-react";
+import { DynamicAlertMap } from "@/components/DynamicMap";
 
 import { type Institution, type AuditLog, type InstitutionUser, type DashboardStats } from "@/lib/api";
 
@@ -39,7 +40,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 function StatCard({ label, value, sub, icon: Icon, color }: {
   label: string; value: string | number; sub?: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: any;
   color: string;
 }) {
   return (
@@ -58,23 +59,31 @@ function StatCard({ label, value, sub, icon: Icon, color }: {
 
 // ── Alert Row ─────────────────────────────────────────────────────────────────
 
-function AlertRow({ alert, onAck, onResolve, role, t }: {
+function AlertRow({ alert, onAck, onResolve, onSelect, role, t }: {
   alert: AlertItem;
   onAck: (id: string) => void;
   onResolve: (id: string) => void;
+  onSelect: (alert: AlertItem) => void;
   role: string | null;
   t: any;
 }) {
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl border transition-all ${
-      alert.status === "active" ? "bg-[#E24B4A]/5 border-[#E24B4A]/20" : "bg-white/3 border-white/5"
+    <div 
+      onClick={() => onSelect(alert)}
+      className={`flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] group ${
+      alert.status === "active" ? "bg-[#E24B4A]/5 border-[#E24B4A]/20 hover:bg-[#E24B4A]/10" : "bg-white/3 border-white/5 hover:bg-white/10"
     }`}>
       <div className={`px-3 py-1 rounded-full text-[10px] font-black border ${LEVEL_COLORS[alert.alert_level]}`}>
         LEVEL {alert.alert_level}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-white text-sm font-bold truncate">{alert.phone_caller}</div>
-        <div className="text-white/40 text-xs flex items-center gap-2 mt-0.5">
+        <div className="flex items-center gap-2 mb-0.5">
+          <div className="w-5 h-5 rounded-full bg-[#1AEEAF]/20 flex items-center justify-center">
+            <Zap size={10} className="text-[#1AEEAF]" />
+          </div>
+          <div className="text-white text-base font-black tracking-tight">{alert.phone_caller || "Numéro inconnu"}</div>
+        </div>
+        <div className="text-white/40 text-xs flex items-center gap-2">
           <MapPin size={10} />
           {alert.location_text || t.dashboard.location_unknown}
           <span className="opacity-30">·</span>
@@ -97,12 +106,18 @@ function AlertRow({ alert, onAck, onResolve, role, t }: {
           {alert.status}
         </div>
         {(role === "admin" || role === "operator") && alert.status === "active" && (
-          <button onClick={() => onAck(alert.id)} className="text-[10px] font-black text-[#1AEEAF] border border-[#1AEEAF]/30 px-3 py-1.5 rounded-lg hover:bg-[#1AEEAF]/10 transition-all uppercase tracking-widest whitespace-nowrap">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onAck(alert.id); }} 
+            className="text-[10px] font-black text-[#1AEEAF] border border-[#1AEEAF]/30 px-3 py-1.5 rounded-lg hover:bg-[#1AEEAF]/10 transition-all uppercase tracking-widest whitespace-nowrap"
+          >
             {t.dashboard.ack}
           </button>
         )}
         {(role === "admin" || role === "operator") && alert.status === "acknowledged" && (
-          <button onClick={() => onResolve(alert.id)} className="text-[10px] font-black text-[#1D9E75] border border-[#1D9E75]/30 px-3 py-1.5 rounded-lg hover:bg-[#1D9E75]/10 transition-all uppercase tracking-widest whitespace-nowrap">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onResolve(alert.id); }} 
+            className="text-[10px] font-black text-[#1D9E75] border border-[#1D9E75]/30 px-3 py-1.5 rounded-lg hover:bg-[#1D9E75]/10 transition-all uppercase tracking-widest whitespace-nowrap"
+          >
             {t.dashboard.resolve}
           </button>
         )}
@@ -192,6 +207,156 @@ function VisualAnalytics({ data }: { data: DashboardStats[] }) {
 
 type Tab = "overview" | "alerts" | "feed" | "users" | "institutions" | "logs" | "profile";
 
+function ClinicalDetailModal({ item, onClose, onAck, t }: { 
+  item: AlertItem | TriageFeedItem, 
+  onClose: () => void, 
+  onAck?: (id: string) => void,
+  t: any 
+}) {
+  if (!item) return null;
+
+  const symptoms = item.symptoms || {};
+  const isAlert = 'alert_level' in item;
+  
+  const score = item.fast_score ?? 0;
+  const risk = item.ai_risk_score ? Math.round(item.ai_risk_score * 100) : 0;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose} />
+      
+      <div className="relative w-full max-w-2xl bg-[#0a0a0b] border border-white/10 rounded-[2.5rem] shadow-[0_50px_100px_rgba(0,0,0,0.8)] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+        {/* Header */}
+        <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+               <div className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border ${
+                 item.ai_decision === 'alert_level2' ? 'bg-[#E24B4A]/10 text-[#E24B4A] border-[#E24B4A]/20' : 
+                 item.ai_decision === 'alert_level1' ? 'bg-[#EF9F27]/10 text-[#EF9F27] border-[#EF9F27]/20' : 'bg-white/5 text-white/40 border-white/10'
+               }`}>
+                 {item.ai_decision || 'ANALYSE EN COURS'}
+               </div>
+               <span className="text-[10px] text-white/20 font-mono">ID: {item.id.substring(0,8)}</span>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+               <div className="w-8 h-8 rounded-xl bg-[#1AEEAF]/10 flex items-center justify-center text-[#1AEEAF]">
+                 <Users size={16} />
+               </div>
+               <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">Détails du Patient</span>
+            </div>
+            <h2 className="text-3xl font-black text-white tracking-tight">{isAlert ? (item as AlertItem).phone_caller : (item as TriageFeedItem).phone_number}</h2>
+          </div>
+          <button onClick={onClose} className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {/* Main Indicators */}
+          <div className="grid grid-cols-2 gap-4">
+             <div className="p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
+                <div className="text-[10px] font-black text-[#1AEEAF] uppercase tracking-widest mb-2">Score BEFAST</div>
+                <div className="text-4xl font-black text-white">{score}<span className="text-white/20 text-xl">/5</span></div>
+             </div>
+             <div className="p-6 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
+                <div className="text-[10px] font-black text-[#EF9F27] uppercase tracking-widest mb-2">Risque IA</div>
+                <div className="text-4xl font-black text-white">{risk}<span className="text-white/20 text-xl">%</span></div>
+             </div>
+          </div>
+
+          {/* Clinical Checkbox List */}
+          <div>
+            <h3 className="text-xs font-black text-white/30 uppercase tracking-[0.2em] mb-4 ml-2">Détails des Symptômes</h3>
+            <div className="grid sm:grid-cols-2 gap-3">
+               {[
+                 { key: 'balance', label: 'Perte d\'équilibre', icon: Activity },
+                 { key: 'eyes', label: 'Troubles visuels', icon: Globe },
+                 { key: 'face', label: 'Asymétrie faciale', icon: HeartPulse },
+                 { key: 'arm', label: 'Faiblesse bras/jambe', icon: Zap },
+                 { key: 'speech', label: 'Troubles parole', icon: BellRing },
+                 { key: 'time_known', label: 'Heure connue', icon: Clock },
+               ].map((s) => (
+                 <div key={s.key} className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${
+                   symptoms[s.key] ? 'bg-[#E24B4A]/5 border-[#E24B4A]/20' : 'bg-white/2 border-white/5 opacity-40'
+                 }`}>
+                   <div className="flex items-center gap-3">
+                     <div className={`p-2 rounded-lg ${symptoms[s.key] ? 'bg-[#E24B4A]/20 text-[#E24B4A]' : 'bg-white/5 text-white/40'}`}>
+                        <s.icon size={14} />
+                     </div>
+                     <span className="text-sm font-medium text-white">{s.label}</span>
+                   </div>
+                   {symptoms[s.key] ? (
+                     <span className="text-[9px] font-black text-[#E24B4A] uppercase tracking-widest">Oui</span>
+                   ) : (
+                     <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">Non</span>
+                   )}
+                 </div>
+               ))}
+            </div>
+          </div>
+
+          {/* Location & Metadata */}
+          <div className="p-6 rounded-3xl bg-white/3 border border-white/5 space-y-4">
+             <div className="flex items-start gap-4">
+               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40 shrink-0">
+                 <MapPin size={20} />
+               </div>
+               <div>
+                  <div className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Localisation Signalée</div>
+                  <div className="text-white font-medium">{isAlert ? (item as AlertItem).location_text : 'En cours d\'acquisition...'}</div>
+               </div>
+             </div>
+
+             <div className="flex items-start gap-4 pt-4 border-t border-white/5">
+               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40 shrink-0">
+                 <Clock size={20} />
+               </div>
+               <div>
+                  <div className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Horodatage</div>
+                  <div className="text-white font-medium">{new Date(isAlert ? (item as AlertItem).created_at : (item as TriageFeedItem).started_at).toLocaleString()}</div>
+               </div>
+             </div>
+          </div>
+
+          {/* Emergency Contact Action */}
+          <div className="p-6 rounded-3xl bg-[#1AEEAF]/10 border border-[#1AEEAF]/20 flex items-center justify-between">
+             <div className="flex items-center gap-4">
+               <div className="w-12 h-12 rounded-2xl bg-[#1AEEAF] text-black flex items-center justify-center shadow-lg shadow-[#1AEEAF]/20">
+                 <Zap size={24} />
+               </div>
+               <div>
+                  <div className="text-[10px] font-black text-[#1AEEAF] uppercase tracking-widest mb-0.5">Ligne Directe</div>
+                  <div className="text-white font-black text-xl">{isAlert ? (item as AlertItem).phone_caller : (item as TriageFeedItem).phone_number}</div>
+               </div>
+             </div>
+             <a 
+               href={`tel:${isAlert ? (item as AlertItem).phone_caller : (item as TriageFeedItem).phone_number}`}
+               className="px-6 py-2.5 rounded-xl bg-white text-black font-black text-xs uppercase tracking-widest hover:bg-[#1AEEAF] transition-all"
+             >
+                Appeler
+             </a>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="p-8 border-t border-white/5 bg-white/[0.01] flex gap-4">
+           {isAlert && (item as AlertItem).status === 'active' && onAck && (
+             <button 
+               onClick={() => { onAck(item.id); onClose(); }}
+               className="flex-1 py-4 rounded-2xl bg-[#1D9E75] text-white font-bold hover:bg-[#1AEEAF] transition-all shadow-xl shadow-[#1D9E75]/20 active:scale-95"
+             >
+               {t.dashboard.ack} l'intervention
+             </button>
+           )}
+           <button onClick={onClose} className="flex-1 py-4 rounded-2xl bg-white/5 text-white/60 font-bold hover:bg-white/10 transition-all border border-white/10 active:scale-95">
+              Fermer
+           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user, role, institutionName, isAuthenticated, isLoading, logout } = useAuth();
   const { t } = useTranslation();
@@ -199,6 +364,8 @@ export default function DashboardPage() {
 
   const [tab, setTab] = useState<Tab>("overview");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [selectedAlert, setSelectedAlert] = useState<AlertItem | null>(null);
+  const [selectedSession, setSelectedSession] = useState<TriageFeedItem | null>(null);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [alertsTotal, setAlertsTotal] = useState(0);
@@ -286,7 +453,7 @@ export default function DashboardPage() {
     );
   }
 
-  const navItems: { id: Tab; icon: React.ComponentType<{size?: number}>; label: string }[] = [
+  const navItems: { id: Tab; icon: any; label: string }[] = [
     { id: "overview", icon: LayoutDashboard, label: t.dashboard.nav_overview },
     { id: "feed", icon: Activity, label: t.dashboard.nav_feed },
     { id: "alerts", icon: BellRing, label: t.dashboard.nav_alerts },
@@ -440,7 +607,24 @@ export default function DashboardPage() {
               {/* ── Dynamic Analytics Chart ── */}
               <VisualAnalytics data={history} />
 
-              <div className="grid lg:grid-cols-2 gap-6">
+              {/* ── Radar Core Map (Institutions Only) ── */}
+              {role === "institution" && user?.institution && (
+                <div className="w-full bg-white/5 border border-white/10 rounded-[1.5rem] p-6 lg:col-span-4 mt-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <div className="text-[10px] text-[#1D9E75] font-black uppercase tracking-[0.3em] mb-1">Radar Core Engine</div>
+                      <h2 className="text-white text-lg font-bold">Couverture Géospatiale (<span className="font-mono">r=1km</span>)</h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                       <span className="w-2 h-2 rounded-full bg-[#1AEEAF] animate-pulse" />
+                       <span className="text-[9px] text-[#1AEEAF]/60 font-black uppercase tracking-widest">En Ligne</span>
+                    </div>
+                  </div>
+                  <DynamicAlertMap institution={user.institution as any} alerts={alerts} />
+                </div>
+              )}
+
+              <div className="grid lg:grid-cols-2 gap-6 mt-6">
                 {/* Recent alerts */}
                 <div className="bg-white/5 border border-white/10 rounded-[1.5rem] p-6">
                   <div className="flex items-center justify-between mb-5">
@@ -450,7 +634,7 @@ export default function DashboardPage() {
                     </button>
                   </div>
                   {alerts.slice(0, 5).map(a => (
-                    <AlertRow key={a.id} alert={a} onAck={handleAck} onResolve={handleResolve} role={role} t={t} />
+                    <AlertRow key={a.id} alert={a} onAck={handleAck} onResolve={handleResolve} onSelect={setSelectedAlert} role={role} t={t} />
                   ))}
                   {alerts.length === 0 && !loadingData && (
                     <div className="text-center py-10 text-white/20">
@@ -469,26 +653,30 @@ export default function DashboardPage() {
                       <span className="text-[9px] text-white/30 uppercase tracking-widest">{t.dashboard.ussd_live}</span>
                     </div>
                   </div>
-                  <div className="space-y-3 max-h-80 overflow-auto">
-                    {feed.map(s => (
-                      <div key={s.id} className="flex items-center gap-4 p-3 rounded-xl bg-white/3 border border-white/5">
-                        <div className={`w-2 h-2 rounded-full shrink-0 ${
-                          s.ai_decision === "alert_level2" ? "bg-[#E24B4A] animate-pulse" :
-                          s.ai_decision === "alert_level1" ? "bg-[#EF9F27]" : "bg-[#1D9E75]"
-                        }`} />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm text-white font-medium truncate">{s.phone_number}</div>
-                          <div className="text-[10px] text-white/30">{s.current_step} · {timeAgo(s.started_at)}</div>
+                    <div className="space-y-3 max-h-80 overflow-auto">
+                      {feed.map(s => (
+                        <div 
+                          key={s.id} 
+                          onClick={() => setSelectedSession(s)}
+                          className="flex items-center gap-4 p-3 rounded-xl bg-white/3 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer group"
+                        >
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${
+                            s.ai_decision === "alert_level2" ? "bg-[#E24B4A] animate-pulse shadow-[0_0_10px_rgba(226,75,74,0.4)]" :
+                            s.ai_decision === "alert_level1" ? "bg-[#EF9F27]" : "bg-[#1D9E75]"
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm text-white font-medium truncate group-hover:text-[#1AEEAF] transition-colors">{s.phone_number}</div>
+                            <div className="text-[10px] text-white/30 capitalize">{s.current_step} · {timeAgo(s.started_at)}</div>
+                          </div>
+                          {s.fast_score != null && (
+                            <div className="text-sm font-bold text-white shrink-0">{s.fast_score}/3</div>
+                          )}
                         </div>
-                        {s.fast_score != null && (
-                          <div className="text-sm font-bold text-white shrink-0">{s.fast_score}/3</div>
-                        )}
-                      </div>
-                    ))}
-                    {feed.length === 0 && !loadingData && (
-                      <div className="text-center py-8 text-white/20 text-sm">{t.dashboard.no_sessions}</div>
-                    )}
-                  </div>
+                      ))}
+                      {feed.length === 0 && !loadingData && (
+                        <div className="text-center py-8 text-white/20 text-sm">{t.dashboard.no_sessions}</div>
+                      )}
+                    </div>
                 </div>
               </div>
 
@@ -525,7 +713,7 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-3">
                 {alerts.map(a => (
-                  <AlertRow key={a.id} alert={a} onAck={handleAck} onResolve={handleResolve} role={role} t={t} />
+                  <AlertRow key={a.id} alert={a} onAck={handleAck} onResolve={handleResolve} onSelect={setSelectedAlert} role={role} t={t} />
                 ))}
                 {alerts.length === 0 && !loadingData && (
                   <div className="text-center py-16 text-white/20">
@@ -549,16 +737,20 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-3">
                 {feed.map(s => (
-                  <div key={s.id} className="flex items-center gap-5 p-4 rounded-2xl bg-white/3 border border-white/5 hover:border-white/10 transition-all">
+                  <div 
+                    key={s.id} 
+                    onClick={() => setSelectedSession(s)}
+                    className="flex items-center gap-5 p-4 rounded-2xl bg-white/3 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer group"
+                  >
                     <div className={`w-3 h-3 rounded-full shrink-0 ${
-                      s.ai_decision === "alert_level2" ? "bg-[#E24B4A] animate-pulse" :
+                      s.ai_decision === "alert_level2" ? "bg-[#E24B4A] animate-pulse shadow-[0_0_10px_rgba(226,75,74,0.4)]" :
                       s.ai_decision === "alert_level1" ? "bg-[#EF9F27]" : "bg-[#1D9E75]"
                     }`} />
                     <div className="flex-1 min-w-0">
-                      <div className="text-white font-bold">{s.phone_number}</div>
+                      <div className="text-white font-bold group-hover:text-[#1AEEAF] transition-colors">{s.phone_number}</div>
                       <div className="text-white/40 text-xs">
-                        Étape: <span className="text-white/60">{s.current_step}</span>
-                        {s.language_code && <> · Lang: <span className="text-white/60">{s.language_code}</span></>}
+                        Étape: <span className="text-white/60 capitalize">{s.current_step}</span>
+                        {s.language_code && <> · Lang: <span className="text-white/60 uppercase">{s.language_code}</span></>}
                         {" "}· {timeAgo(s.started_at)}
                       </div>
                     </div>
@@ -623,18 +815,59 @@ export default function DashboardPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 {institutions.map(inst => (
                   <div key={inst.id} className="p-5 rounded-2xl bg-white/3 border border-white/5 hover:border-[#1D9E75]/30 transition-all flex justify-between items-start">
-                    <div>
+                    <div className="flex-1">
                       <div className="text-white font-bold mb-1">{inst.name}</div>
                       <div className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">{inst.type} · {inst.country_code}</div>
+                      
+                      <div className="mt-3 text-[10px] text-white/50 space-y-1">
+                        <div><strong className="text-white">GPS:</strong> {inst.latitude ? `${inst.latitude}, ${inst.longitude}` : 'Non Défini'}</div>
+                        <div><strong className="text-white">Adr:</strong> {inst.address || 'Non Défini'}</div>
+                        <div><strong className="text-white">Heures:</strong> {inst.opening_hours || 'Non Défini'}</div>
+                      </div>
+
                       <div className="mt-4 flex gap-2">
                         {inst.alert_zones?.map(z => (
                           <span key={z} className="px-2 py-1 rounded-md bg-white/5 text-[9px] text-[#1AEEAF] uppercase tracking-widest">{z}</span>
                         ))}
                       </div>
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${inst.is_active ? 'bg-[#1D9E75]/20 text-[#1AEEAF]' : 'bg-red-500/20 text-red-400'}`}>
-                      {inst.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                    
+                    <div className="flex flex-col items-end gap-3 rounded text-[8px] font-black uppercase">
+                      <span className={`px-2 py-0.5 rounded ${inst.is_active ? 'bg-[#1D9E75]/20 text-[#1AEEAF]' : 'bg-red-500/20 text-red-400'}`}>
+                        {inst.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      
+                      <button 
+                        onClick={async () => {
+                          const latStr = prompt("Latitude (ex: 6.5244) :", inst.latitude?.toString() || "");
+                          if (latStr === null) return;
+                          const lngStr = prompt("Longitude (ex: 3.3792) :", inst.longitude?.toString() || "");
+                          if (lngStr === null) return;
+                          const newLat = parseFloat(latStr.replace(',','.'));
+                          const newLng = parseFloat(lngStr.replace(',','.'));
+                          if (isNaN(newLat) || isNaN(newLng)) return alert("Coordonnées invalides !");
+                          
+                          const address = prompt("Adresse complète :", inst.address || "") || undefined;
+                          const opening_hours = prompt("Heures d'ouverture (ex: 24/7) :", inst.opening_hours || "") || undefined;
+                          
+                          try {
+                            setRefreshing(true);
+                            await dashboardApi.updateInstitution(inst.id, {
+                              latitude: newLat, longitude: newLng, address, opening_hours
+                            });
+                            alert("✅ Vitrine mise à jour !");
+                            fetchData();
+                          } catch(e) {
+                            alert("❌ Erreur lors de la mise à jour.");
+                          } finally {
+                            setRefreshing(false);
+                          }
+                        }}
+                        className="mt-2 text-[#EF9F27] hover:underline"
+                      >
+                        MODIFIER VITRINE
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -669,6 +902,66 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
+
+                {role === "institution" && user?.institution && (
+                  <div className="pt-8 border-b border-white/5 pb-10">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-white font-bold">Vitrine & Géolocalisation</h3>
+                      <button 
+                        onClick={async () => {
+                          const latStr = prompt("Latitude (ex: 6.5244) :", user.institution?.latitude?.toString() || "");
+                          if (latStr === null) return;
+                          const lngStr = prompt("Longitude (ex: 3.3792) :", user.institution?.longitude?.toString() || "");
+                          if (lngStr === null) return;
+                          
+                          const newLat = parseFloat(latStr.replace(',','.'));
+                          const newLng = parseFloat(lngStr.replace(',','.'));
+                          if (isNaN(newLat) || isNaN(newLng)) return alert("Coordonnées invalides !");
+                          
+                          const address = prompt("Adresse complète :", user.institution?.address || "") || undefined;
+                          const opening_hours = prompt("Heures d'ouverture (ex: 24/7) :", user.institution?.opening_hours || "") || undefined;
+                          
+                          try {
+                            setRefreshing(true);
+                            await dashboardApi.updateInstitution(user.institution!.id, {
+                              latitude: newLat,
+                              longitude: newLng,
+                              address,
+                              opening_hours
+                            });
+                            alert("✅ Vitrine mise à jour ! Veuillez vous reconnecter ou actualiser pour voir les changements.");
+                          } catch(e) {
+                            alert("❌ Erreur lors de la mise à jour.");
+                          } finally {
+                            setRefreshing(false);
+                          }
+                        }}
+                        className="text-[10px] text-[#1AEEAF] border border-[#1AEEAF]/30 px-3 py-1.5 rounded-lg hover:bg-[#1AEEAF]/10 uppercase tracking-widest font-black"
+                      >
+                        Modifier Info
+                      </button>
+                    </div>
+                    
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl bg-white/3 border border-white/5">
+                        <div className="text-[10px] text-white/40 uppercase mb-1">Coordonnées GPS</div>
+                        <div className="text-sm font-mono text-white">
+                          {user.institution.latitude && user.institution.longitude 
+                            ? `${user.institution.latitude}, ${user.institution.longitude}`
+                            : <span className="text-red-400">Non configuré</span>}
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-white/3 border border-white/5">
+                        <div className="text-[10px] text-white/40 uppercase mb-1">Adresse Publique</div>
+                        <div className="text-sm text-white">{user.institution.address || "—"}</div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-white/3 border border-white/5 sm:col-span-2">
+                        <div className="text-[10px] text-white/40 uppercase mb-1">Heures d'ouverture</div>
+                        <div className="text-sm text-white font-medium">{user.institution.opening_hours || "—"}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="pt-8">
                   <h3 className="text-white font-bold mb-6">Préférences</h3>
@@ -723,6 +1016,13 @@ export default function DashboardPage() {
 
         </main>
       </div>
+
+      <ClinicalDetailModal 
+        item={(selectedAlert || selectedSession) as any} 
+        onClose={() => { setSelectedAlert(null); setSelectedSession(null); }} 
+        onAck={handleAck}
+        t={t} 
+      />
     </div>
   );
 }

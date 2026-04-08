@@ -7,12 +7,12 @@ import Chatbot from "@/components/Chatbot";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
 
-export const dmSans = DM_Sans({
+const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
 });
 
-export const dmSerif = DM_Serif_Display({
+const dmSerif = DM_Serif_Display({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-dm-serif",

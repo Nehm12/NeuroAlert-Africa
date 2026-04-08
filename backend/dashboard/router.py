@@ -20,6 +20,7 @@ from backend.dashboard.schemas import (
     CreateUserRequest,
     PaginatedAlerts,
     InstitutionResponse,
+    InstitutionUpdateRequest,
     AuditLogResponse,
 )
 
@@ -129,24 +130,32 @@ async def list_alerts(
     per_page: int = Query(20, ge=1, le=100),
     current_user: dict = Depends(get_current_user),
 ):
-    """
-    Returns a paginated list of alerts. Filterable by status and alert level.
-    If 'institution' role, results are filtered by institution zones.
-    """
     query = supabase_admin.table("alerts").select("*", count="exact").order("created_at", desc=True)
-
-    if status_filter:
-        query = query.eq("status", status_filter)
-    if alert_level:
-        query = query.eq("alert_level", alert_level)
 
     # Role-based filtering
     role = current_user.get("role")
     if role != "super_admin":
         institution_data = current_user.get("institution", {})
-        c_code = institution_data.get("country_code")
-        if c_code:
-            query = query.eq("country_code", c_code)
+        inst_lat = institution_data.get("latitude")
+        inst_lon = institution_data.get("longitude")
+        
+        # If institution has coordinates, strict geofence of 1km using RPC
+        if inst_lat is not None and inst_lon is not None:
+            query = supabase_admin.rpc("get_nearby_alerts", {
+                "inst_lat": inst_lat,
+                "inst_lon": inst_lon,
+                "radius_km": 1.0
+            }).select("*", count="exact")
+        else:
+            # Fallback legacy filtration pour éviter les plantages si non géolocalisé
+            c_code = institution_data.get("country_code")
+            if c_code:
+                query = query.eq("country_code", c_code)
+
+    if status_filter:
+        query = query.eq("status", status_filter)
+    if alert_level:
+        query = query.eq("alert_level", alert_level)
 
     # Pagination
     offset = (page - 1) * per_page
@@ -164,6 +173,34 @@ async def list_alerts(
         per_page=per_page,
         has_more=(offset + per_page) < total,
     )
+
+
+@router.patch("/institutions/{inst_id}", response_model=InstitutionResponse, summary="Modifier la vitrine")
+async def update_institution(
+    inst_id: str,
+    body: InstitutionUpdateRequest,
+    current_user: dict = Depends(require_role("super_admin", "institution")),
+):
+    """
+    Super Admin édite les coordonnées, adresses de vitrine et infos des institutions.
+    L'Institution elle-même peut éditer uniquement les siennes.
+    """
+    role = current_user.get("role")
+    user_inst_id = current_user.get("institution_id")
+    
+    if role == "institution" and str(user_inst_id) != str(inst_id):
+        raise HTTPException(status_code=403, detail="Vous ne pouvez modifier que votre propre vitrine institutionnelle.")
+
+    update_data = {k: v for k, v in body.dict().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    res = supabase_admin.table("institutions").update(update_data).eq("id", inst_id).execute()
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Institution non trouvée.")
+        
+    return InstitutionResponse(**res.data[0])
 
 
 @router.patch(

@@ -3,7 +3,7 @@
  * All calls to the FastAPI backend are centralized here.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/_/backend";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -73,7 +73,12 @@ export interface UserProfile {
     name: string;
     type: string;
     country_code: string;
-    plan: string;
+    plan?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    address?: string | null;
+    opening_hours?: string | null;
+    description?: string | null;
   } | null;
 }
 
@@ -82,11 +87,14 @@ export interface AlertItem {
   alert_level: 1 | 2;
   phone_caller: string;
   location_text: string | null;
+  latitude: number | null;
+  longitude: number | null;
   country_code: string | null;
   fast_score: number;
   ai_risk_score: number | null;
   ai_decision: string | null;
   status: "active" | "acknowledged" | "resolved" | "false_positive";
+  symptoms: Record<string, any> | null;
   sms_sent_at: string | null;
   response_time_min: number | null;
   created_at: string;
@@ -125,6 +133,7 @@ export interface TriageFeedItem {
   ai_risk_score: number | null;
   ai_decision: string | null;
   status: string;
+  symptoms: Record<string, any> | null;
   started_at: string;
   completed_at: string | null;
 }
@@ -143,6 +152,11 @@ export interface Institution {
   type: string;
   country_code: string;
   alert_zones: string[] | null;
+  latitude: number | null;
+  longitude: number | null;
+  address: string | null;
+  opening_hours: string | null;
+  description: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -212,6 +226,12 @@ export const dashboardApi = {
   getUsers: () => apiFetch<InstitutionUser[]>("/dashboard/users"),
 
   getInstitutions: () => apiFetch<Institution[]>("/dashboard/institutions"),
+
+  updateInstitution: (id: string, data: Partial<Institution>) =>
+    apiFetch<Institution>(`/dashboard/institutions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
 
   getAuditLogs: () => apiFetch<AuditLog[]>("/dashboard/audit-logs"),
 

@@ -15,10 +15,13 @@ class AlertResponse(BaseModel):
     phone_caller: str
     location_text: Optional[str]
     country_code: Optional[str]
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     fast_score: int                # 0-5 (BEFAST)
     ai_risk_score: Optional[float] # 0.0-1.0
     ai_decision: Optional[str]     # low_risk / alert_level1 / alert_level2
     status: str                    # active / acknowledged / resolved / false_positive
+    symptoms: Optional[dict] = None
     sms_sent_at: Optional[datetime]
     response_time_min: Optional[int]
     created_at: datetime
@@ -66,6 +69,7 @@ class TriageFeedItem(BaseModel):
     ai_risk_score: Optional[float]
     ai_decision: Optional[str]
     status: str
+    symptoms: Optional[dict] = None
     started_at: datetime
     completed_at: Optional[datetime]
 
@@ -96,8 +100,21 @@ class InstitutionResponse(BaseModel):
     type: str                      # hospital / clinic / emergency_center
     country_code: str
     alert_zones: Optional[List[str]]
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    address: Optional[str] = None
+    opening_hours: Optional[str] = None
+    description: Optional[str] = None
     is_active: bool
     created_at: datetime
+
+class InstitutionUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    opening_hours: Optional[str] = None
+    description: Optional[str] = None
 
 
 # ── Audit Log Schemas ────────────────────────────────────────────────────────
