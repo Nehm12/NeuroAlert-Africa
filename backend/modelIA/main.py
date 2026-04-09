@@ -98,31 +98,41 @@ def _compute_rule_metrics(inp: FASTInput) -> tuple[int, float, UrgencyLevel, str
     ]
     n = sum(1 for s in signs if s)
     risk = n / 5.0
+    lang = inp.language_code
 
+    # Multi-lingual recommendations
+    RECS = {
+        "en": {
+            "low": "No obvious BEFAST signs detected. If symptoms persist, contact a professional. In case of emergency, call 911.",
+            "med": "At least one BEFAST warning sign detected. A stroke is possible. Call emergency services immediately.",
+            "high": "Multiple positive BEFAST signs: life-threatening emergency likely. Call emergency services NOW. Note the time symptoms started."
+        },
+        "fr": {
+            "low": "Aucun signe BEFAST évident. En cas de doute, contactez un professionnel. En urgence vitale, appelez les secours.",
+            "med": "Au moins un signe d'alerte BEFAST détecté. Un AVC est possible. Appelez immédiatement les secours.",
+            "high": "Plusieurs signes BEFAST positifs : urgence vitale probable. Appelez les secours tout de suite. Notez l'heure des signes."
+        }
+    }
+    
+    # Fallback to English if lang not found
+    m = RECS.get(lang, RECS["en"])
+    
     if n == 0:
         urg = UrgencyLevel.low
-        rec = (
-            "Aucun signe BEFAST évident. En cas de doute ou symptômes persistants, "
-            "contactez un professionnel. En urgence vitale, appelez les secours."
-        )
+        rec = m["low"]
     elif n == 1:
         urg = UrgencyLevel.medium
-        rec = (
-            "Au moins un signe d'alerte BEFAST détecté. Un AVC est possible. "
-            "Appelez immédiatement les secours."
-        )
+        rec = m["med"]
     else:
         urg = UrgencyLevel.high
-        rec = (
-            "Plusieurs signes BEFAST positifs : urgence vitale probable. "
-            "Appelez les secours tout de suite. Notez l'heure des signes."
-        )
+        rec = m["high"]
 
     if inp.time_symptoms_known is False and n >= 1:
-        rec += " Notez l'heure exacte du début des symptômes."
+        time_msg = " Note the exact time symptoms started." if lang == "en" else " Notez l'heure exacte du début des symptômes."
+        rec += time_msg
 
     rationale = (
-        f"BEFAST: {n}/5 positifs (B={inp.balance_loss}, E={inp.vision_problem}, "
+        f"BEFAST: {n}/5 positive (B={inp.balance_loss}, E={inp.vision_problem}, "
         f"F={inp.face_droop}, A={inp.arm_weakness}, S={inp.speech_difficulty})."
     )
     return n, risk, urg, rec.strip(), rationale
@@ -284,8 +294,6 @@ class NeuroAlertModel:
     ) -> None:
         self._gemini_api_key = (gemini_api_key or os.getenv("GEMINI_API_KEY") or "").strip() or None
         self._gemini_model = (gemini_model or os.getenv("GEMINI_MODEL") or "gemini-1.5-flash").strip()
-        if not self._gemini_model.startswith("models/"):
-            self._gemini_model = f"models/{self._gemini_model}"
 
     def _rules_only(self, inp: FASTInput) -> StrokeAnalysisResult:
         n, risk, urg, rec, rationale = _compute_rule_metrics(inp)

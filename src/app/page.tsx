@@ -195,9 +195,14 @@ export default function Home() {
         {/* Hero Content */}
         <div className="max-w-7xl mx-auto px-6 pt-16 flex flex-col lg:flex-row items-center gap-12">
           <div className="lg:w-5/12 space-y-8">
-            <span className="inline-block bg-[#04342C]/40 text-[#9FE1CB] text-xs font-semibold px-4 py-1.5 rounded-full">
-              {t.hero.badge}
-            </span>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-block bg-[#04342C]/40 text-[#9FE1CB] text-xs font-semibold px-4 py-1.5 rounded-full border border-[#9FE1CB]/20">
+                {t.hero.badge}
+              </span>
+              <span className="inline-block bg-[#EF9F27]/20 text-[#EF9F27] text-xs font-semibold px-4 py-1.5 rounded-full border border-[#EF9F27]/30">
+                Zero Internet • No Smartphone Needed
+              </span>
+            </div>
             <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] font-serif whitespace-pre-line">
               {t.hero.title}
             </h1>
