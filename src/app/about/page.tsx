@@ -6,7 +6,7 @@ import { Globe, ShieldCheck, Zap, Activity, Users, Target, HeartPulse, Graduatio
 
 const LinkedInIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
   </svg>
 );
 
@@ -14,11 +14,11 @@ const TeamCard = ({ name, role, img, linkedIn = "#", variant = "default" }: { na
   <div className={`group relative bg-white rounded-[2rem] border border-black/5 p-8 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:-translate-y-2 overflow-hidden ${variant === 'large' ? 'md:p-10' : ''}`}>
     {/* Decorative Bio-Metric background element */}
     <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#1D9E75]/5 rounded-full blur-3xl group-hover:bg-[#EF9F27]/10 transition-colors"></div>
-    
+
     <div className="relative z-10">
       <div className={`relative mb-6 rounded-2xl overflow-hidden shadow-lg aspect-square bg-gradient-to-br from-[#085041]/10 to-[#1D9E75]/10 ${variant === 'large' ? 'w-full max-w-[240px] mx-auto' : 'w-24 h-24'}`}>
-        <Image 
-          src={img} 
+        <Image
+          src={img}
           alt={name}
           width={400}
           height={400}
@@ -29,14 +29,14 @@ const TeamCard = ({ name, role, img, linkedIn = "#", variant = "default" }: { na
           {name.charAt(0)}
         </div>
       </div>
-      
+
       <div className={variant === 'large' ? 'text-center mt-6' : ''}>
         <h3 className={`font-bold text-[#085041] leading-tight mb-2 ${variant === 'large' ? 'text-3xl' : 'text-xl'}`}>{name}</h3>
         <p className="text-[#5F5E5A] text-sm font-light mb-6 leading-relaxed uppercase tracking-wider">{role}</p>
-        
-        <a 
-          href={linkedIn} 
-          target="_blank" 
+
+        <a
+          href={linkedIn}
+          target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-[#085041]/60 hover:text-[#EF9F27] transition-colors group/link"
         >
@@ -53,13 +53,13 @@ export default function AboutPage() {
 
   return (
     <main className="min-h-screen font-sans bg-[#FBFBFA] overflow-hidden">
-      
+
       {/* About Hero Section */}
       <section className="bg-gradient-to-br from-[#085041] to-[#04342C] pt-32 pb-48 text-white relative">
         <div className="absolute inset-0 overflow-hidden opacity-10">
           <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#1D9E75] rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
         </div>
-        
+
         <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
           <span className="inline-block bg-[#04342C]/40 text-[#9FE1CB] text-[10px] font-black tracking-[0.4em] px-6 py-2 rounded-full mb-8 border border-white/10 uppercase">
             {t.about.badge}
@@ -85,7 +85,7 @@ export default function AboutPage() {
               {t.about.mission_p1}
             </p>
           </div>
-          
+
           <div className="bg-white p-12 rounded-[3.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.05)] border border-black/5 hover:border-[#EF9F27]/30 transition-all group">
             <div className="w-16 h-16 bg-[#FFF9F2] text-[#EF9F27] rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
               <Globe className="w-8 h-8" />
@@ -104,7 +104,7 @@ export default function AboutPage() {
           <h2 className="text-3xl md:text-4xl font-bold text-[#085041] font-serif italic mb-4">{t.team.founders_title}</h2>
           <div className="w-24 h-1.5 bg-[#EF9F27] mx-auto rounded-full"></div>
         </div>
-        
+
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <TeamCard name={t.team.founder1_name} role={t.team.founder1_role} img="/team/founders/founder1.png" variant="large" />
           <TeamCard name={t.team.founder2_name} role={t.team.founder2_role} img="/team/founders/founder2.png" variant="large" />
@@ -114,13 +114,13 @@ export default function AboutPage() {
       {/* Team Builders Section */}
       <section className="bg-[#085041] py-32 text-white overflow-hidden relative">
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-[#1D9E75]/10 rounded-full blur-[100px] translate-y-1/2 translate-x-1/2"></div>
-        
+
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="mb-20">
             <h2 className="text-3xl md:text-4xl font-bold font-serif mb-4 italic">{t.team.builders_title}</h2>
             <p className="text-[#9FE1CB] font-light max-w-xl text-base">{t.home_features.desc}</p>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <TeamCard name={t.team.builder1_name} role={t.team.builder1_role} img="/team/builders/builder1.png" />
             <TeamCard name={t.team.builder2_name} role={t.team.builder2_role} img="/team/builders/builder2.png" />
@@ -133,7 +133,7 @@ export default function AboutPage() {
       {/* Experts & Mentors Section */}
       <section className="max-w-7xl mx-auto px-6 py-32">
         <div className="grid lg:grid-cols-2 gap-20">
-          
+
           {/* Clinical Experts */}
           <div>
             <div className="flex items-center gap-4 mb-12">
@@ -144,7 +144,6 @@ export default function AboutPage() {
             </div>
             <div className="grid gap-6">
               <TeamCard name={t.team.expert1_name} role={t.team.expert1_role} img="/team/experts/expert1.png" variant="small" />
-              <TeamCard name={t.team.expert2_name} role={t.team.expert2_role} img="/team/experts/expert2.png" variant="small" />
             </div>
           </div>
 
@@ -174,8 +173,8 @@ export default function AboutPage() {
           <p className="text-[#9FE1CB] text-lg font-light mb-10 max-w-2xl mx-auto leading-relaxed">
             {t.contact.subtitle}
           </p>
-          <a 
-            href="/contact" 
+          <a
+            href="/contact"
             className="inline-flex items-center gap-3 bg-[#EF9F27] text-[#04342C] px-12 py-6 rounded-3xl font-bold text-lg hover:scale-105 active:scale-95 transition-all shadow-[0_15px_40px_rgba(239,159,39,0.3)]"
           >
             {t.contact.form_submit}

@@ -24,7 +24,7 @@ export default function ContactPage() {
           <p className="text-[#5F5E5A] font-light leading-relaxed mb-8">
             {t.contact.success_msg}
           </p>
-          <button 
+          <button
             onClick={() => setSubmitted(false)}
             className="w-full bg-[#085041] text-white py-4 rounded-2xl font-bold hover:shadow-xl transition-all"
           >
@@ -57,24 +57,24 @@ export default function ContactPage() {
       {/* Form Content */}
       <section className="max-w-7xl mx-auto px-6 -mt-32 mb-32 relative z-20">
         <div className="flex flex-col lg:flex-row gap-12">
-          
+
           {/* Left Column: Form Card */}
           <div className="lg:w-2/3 bg-white rounded-[3rem] p-8 md:p-16 shadow-[0_50px_100px_rgba(8,80,65,0.05)] border border-[#F1EFE8]">
-            
+
             {/* Type Switcher */}
             <div className="mb-12">
               <label className="block text-[10px] font-black text-[#085041]/40 uppercase tracking-[0.2em] mb-6">
                 {t.contact.type_label}
               </label>
               <div className="flex p-1.5 bg-[#F8F7F3] rounded-2xl border border-[#F1EFE8] w-full max-w-sm">
-                <button 
+                <button
                   onClick={() => setType("citizen")}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-bold text-sm ${type === "citizen" ? "bg-white text-[#085041] shadow-md" : "text-[#085041]/40 hover:text-[#085041]"}`}
                 >
                   <User size={16} />
                   {t.contact.type_citizen}
                 </button>
-                <button 
+                <button
                   onClick={() => setType("institution")}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-bold text-sm ${type === "institution" ? "bg-[#085041] text-white shadow-lg" : "text-[#085041]/40 hover:text-[#085041]"}`}
                 >
@@ -151,7 +151,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[10px] uppercase font-black text-white/30 tracking-widest mb-1">Email</div>
-                    <div className="text-sm font-medium">engineering@neuroalert.africa</div>
+                    <div className="text-sm font-medium">naaf@neuroalert.africa</div>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -160,7 +160,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[10px] uppercase font-black text-white/30 tracking-widest mb-1">Phone</div>
-                    <div className="text-sm font-medium">+234 800 STROKE</div>
+                    <div className="text-sm font-medium">+234 000 000 000</div>
                   </div>
                 </div>
                 <div className="flex gap-4">

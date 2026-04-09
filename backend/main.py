@@ -120,8 +120,8 @@ async def health_check():
             face=False, arm=False, speech=False
         )
         ai_status = "ready" if ai_result else "error"
-    except Exception as e:
-        ai_status = f"error: {str(e)}"
+    except Exception:
+        ai_status = "error"
         
     return {
         "status": "healthy" if db_status == "connected" and "error" not in ai_status else "degraded",

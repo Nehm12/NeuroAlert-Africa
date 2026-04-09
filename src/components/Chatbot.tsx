@@ -14,9 +14,8 @@ export default function Chatbot() {
       {/* Floating Toggle Button */}
       <button
         onClick={toggleChat}
-        className={`fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-[0_10px_30px_rgba(29,158,117,0.3)] flex items-center justify-center transition-all duration-500 z-[100] ${
-          isOpen ? "bg-[#E24B4A] rotate-90" : "bg-[#1D9E75] hover:scale-110"
-        }`}
+        className={`fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-[0_10px_30px_rgba(29,158,117,0.3)] flex items-center justify-center transition-all duration-500 z-[100] ${isOpen ? "bg-[#E24B4A] rotate-90" : "bg-[#1D9E75] hover:scale-110"
+          }`}
       >
         {isOpen ? <X className="text-white" size={24} /> : <MessageSquare className="text-white" size={24} />}
         {!isOpen && (
@@ -26,9 +25,8 @@ export default function Chatbot() {
 
       {/* Chat Modal */}
       <div
-        className={`fixed bottom-28 right-8 w-[350px] sm:w-[400px] bg-white rounded-[2.5rem] shadow-[0_30px_90px_rgba(0,0,0,0.2)] border border-[#F1EFE8] flex flex-col overflow-hidden transition-all duration-500 z-[100] origin-bottom-right ${
-          isOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-90 translate-y-10 pointer-events-none"
-        }`}
+        className={`fixed bottom-28 right-8 w-[350px] sm:w-[400px] bg-white rounded-[2.5rem] shadow-[0_30px_90px_rgba(0,0,0,0.2)] border border-[#F1EFE8] flex flex-col overflow-hidden transition-all duration-500 z-[100] origin-bottom-right ${isOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-90 translate-y-10 pointer-events-none"
+          }`}
       >
         {/* Header */}
         <div className="bg-[#04342C] p-6 text-white flex items-center justify-between">
@@ -62,7 +60,7 @@ export default function Chatbot() {
               <User size={16} />
             </div>
             <div className="bg-[#04342C] p-4 rounded-2xl rounded-tr-none shadow-md text-sm text-white leading-relaxed">
-              I need information about stroke symptoms.
+              Info about stroke symptoms.
             </div>
           </div>
         </div>
@@ -79,10 +77,10 @@ export default function Chatbot() {
           </button>
         </div>
       </div>
-      
+
       {/* Overlay for closing when clicking outside on mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/5 z-[90] lg:hidden"
           onClick={toggleChat}
         ></div>
