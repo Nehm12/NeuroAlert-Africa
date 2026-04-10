@@ -103,14 +103,14 @@ def _compute_rule_metrics(inp: FASTInput) -> tuple[int, float, UrgencyLevel, str
     # Multi-lingual recommendations
     RECS = {
         "en": {
-            "low": "No obvious BEFAST signs detected. If symptoms persist, contact a professional. In case of emergency, call 911.",
-            "med": "At least one BEFAST warning sign detected. A stroke is possible. Call emergency services immediately.",
-            "high": "Multiple positive BEFAST signs: life-threatening emergency likely. Call emergency services NOW. Note the time symptoms started."
+            "low": "You are okay! But you might just be stressed or need to drink water. Please go home and rest.",
+            "med": "DANGER! You are showing signs of a stroke. Go to FMC Abeokuta or Babcock Teaching Hospital (Ogun State) immediately.",
+            "high": "DANGER! You are showing signs of a stroke. Go to FMC Abeokuta or OOUTH Sagamu (Ogun State) immediately for treatment."
         },
         "fr": {
-            "low": "Aucun signe BEFAST évident. En cas de doute, contactez un professionnel. En urgence vitale, appelez les secours.",
-            "med": "Au moins un signe d'alerte BEFAST détecté. Un AVC est possible. Appelez immédiatement les secours.",
-            "high": "Plusieurs signes BEFAST positifs : urgence vitale probable. Appelez les secours tout de suite. Notez l'heure des signes."
+            "low": "Vous allez bien ! Mais il se peut que vous soyez simplement fatigué ou que vous ayez besoin d'eau. Reposez-vous.",
+            "med": "DANGER ! Vous présentez des signes d'AVC. Allez immédiatement au FMC Abeokuta ou à l'Hôpital Babcock (Ogun State).",
+            "high": "URGENCE VITALE ! Vous présentez des signes graves d'AVC. Allez immédiatement au FMC Abeokuta ou à l'OOUTH Sagamu (Ogun State)."
         }
     }
     
@@ -128,7 +128,7 @@ def _compute_rule_metrics(inp: FASTInput) -> tuple[int, float, UrgencyLevel, str
         rec = m["high"]
 
     if inp.time_symptoms_known is False and n >= 1:
-        time_msg = " Note the exact time symptoms started." if lang == "en" else " Notez l'heure exacte du début des symptômes."
+        time_msg = " Note the time it started." if lang == "en" else " Notez l'heure du début."
         rec += time_msg
 
     rationale = (
@@ -197,7 +197,10 @@ Analyse déjà calculée par règles :
 
 Réponds UNIQUEMENT en JSON valide selon ce schéma : {json.dumps(schema_hint)}
 - Ne pas inventer d'examen clinique. Urgentiste virtuel.
-- Textes courts pour écran téléphone basique.
+- Textes COURTS et SIMPLES (Pas de jargon médical).
+- Si risque détecté, recommander le Federal Medical Centre (FMC) Abeokuta ou OOUTH Sagamu en Ogun State.
+- Si pas de risque, dire que c'est probablement du stress ou de la fatigue.
+- Textes pour écran téléphone basique.
 """
 
     config = GenerationConfig(
